@@ -1,6 +1,7 @@
 import { createElement } from '../render.js';
+import { formatDate, getDuration } from '../utils.js';
 
-function createTemplate() {
+function createTemplate(point, destinations, offers) {
   return (`
     <li class="trip-events__item">
       <form class="event event--edit" action="#" method="post">
@@ -8,7 +9,7 @@ function createTemplate() {
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-1">
               <span class="visually-hidden">Choose event type</span>
-              <img class="event__type-icon" width="17" height="17" src="img/icons/flight.png" alt="Event type icon">
+              <img class="event__type-icon" width="17" height="17" src="img/icons/${point.type}.png" alt="Event type icon">
             </label>
             <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -68,7 +69,7 @@ function createTemplate() {
             <label class="event__label  event__type-output" for="event-destination-1">
               Flight
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="Chamonix" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${point.destination}" list="destination-list-1">
             <datalist id="destination-list-1">
               <option value="Amsterdam"></option>
               <option value="Geneva"></option>
@@ -161,8 +162,14 @@ function createTemplate() {
 }
 
 export default class FormEditView {
+  constructor(point, destinations, offers) {
+    this.point = point;
+    this.destinations = destinations;
+    this.offers = offers;
+  }
+
   getTemplate() {
-    return createTemplate();
+    return createTemplate(this.point, this.destinations, this.offers);
   }
 
   getElement() {

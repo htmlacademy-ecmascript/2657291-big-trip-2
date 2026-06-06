@@ -1,34 +1,36 @@
+import { getRandomPoints } from '../utils'
+
 export const mockDestination =
   [
     {
-      id: '100',
-      description: 'Chamonix, is a beautiful city, a true asian pearl, with crowded streets.',
-      name: 'Chamonix',
+      id: '1',
+      description: 'Это место, где можно прикоснуться к прошлому, прогуливаясь по территории кремля.',
+      name: 'Ryazan',
       pictures: [
         {
-          'src': 'http://picsum.photos/300/200?r=0.0762563005163317',
-          'description': 'Chamonix parliament building'
+          'src': `https://loremflickr.com/248/152?random=${getRandomPoints()}`,
+          'description': 'Описание картинки Рязань'
         }
       ]
     },
     {
-      id: '102',
-      description: 'Chamonix, is a beautiful city, a true asian pearl, with crowded streets.',
+      id: '2',
+      description: 'это небольшой город с населением около 5-7 тысяч человек,',
       name: 'Spassk',
       pictures: []
     },
     {
-      id: '160',
-      description: 'Chamonix, is a beautiful city, a true asian pearl, with crowded streets.',
+      id: '3',
+      description: 'Столица нашей родины',
       name: 'Moscow',
       pictures: [
         {
-          'src': 'http://picsum.photos/300/200?r=0.0762563005163317',
-          'description': 'Chamonix parliament building'
+          'src': `https://loremflickr.com/248/152?random=${getRandomPoints()}`,
+          'description': 'Описание картинки Москва'
         },
         {
-          'src': 'http://picsum.photos/300/200?r=0.0762563005163317',
-          'description': 'Chamonix parliament building'
+          'src': `https://loremflickr.com/248/152?random=${getRandomPoints()}`,
+          'description': 'Описание картинки Москва'
         }
       ]
     }
