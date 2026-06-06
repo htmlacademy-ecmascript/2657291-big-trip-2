@@ -58,7 +58,7 @@ export const mockOffers = [
         price: 1000
       },
       {
-        id: '2s',  // ← исправлено! был '1s'
+        id: '2s',
         title: 'Бизнес класс',
         price: 3000
       }

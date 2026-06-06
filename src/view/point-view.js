@@ -3,13 +3,13 @@ import { formatDate, getDuration } from '../utils.js';
 
 function createTemplate(point, destinations, offers) {
   const { basePrice, isFavorite, dateFrom, dateTo, type } = point;
- 
-  const foundOffer = offers.find((offer) => offer.type === point.type);
+
+  /*const foundOffer = offers.find((offer) => offer.type === point.type);
   if (!foundOffer) {
     console.error('Не найден offer для типа:', point.type);
     console.log('Доступные типы offers:', offers.map((o) => o.type));
     return '<li>Ошибка: нет данных для этого типа</li>';
-  }
+  }*/
 
   const typeOffers = offers.find((offer) => offer.type === point.type).offers;
   const pointOffers = typeOffers.filter((typeOffer) => point.offers.includes(typeOffer.id));

@@ -1,4 +1,4 @@
-import { getRandomPoints } from '../utils'
+import { getRandomPoints } from '../utils';
 
 export const mockDestination =
   [

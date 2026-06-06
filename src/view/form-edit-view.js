@@ -1,7 +1,7 @@
 import { createElement } from '../render.js';
-import { formatDate, getDuration } from '../utils.js';
+//import { formatDate, getDuration } from '../utils.js';
 
-function createTemplate(point, destinations, offers) {
+function createTemplate(point /*destinations, offers*/) {
   return (`
     <li class="trip-events__item">
       <form class="event event--edit" action="#" method="post">

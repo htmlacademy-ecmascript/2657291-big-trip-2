@@ -4,7 +4,7 @@ import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
 import FormEditView from '../view/form-edit-view.js';
 import PointView from '../view/point-view.js';
-import PointModel from '../model/points-model.js';
+//import PointModel from '../model/points-model.js';
 export default class BoardPresenter {
   filterComponent = new FilterView();
   sortComponent = new SortView();
