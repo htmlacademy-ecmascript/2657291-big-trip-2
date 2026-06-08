@@ -4,12 +4,12 @@ export const mockOffers = [
     offers: [
       {
         id: '1t',
-        title: 'Эконом класс',
+        title: '* - Эконом класс',
         price: 120
       },
       {
         id: '2t',
-        title: 'Автомобиль бизнес класса',
+        title: '* -Автомобиль бизнес класса',
         price: 600
       }
     ]

@@ -26,4 +26,20 @@ export default class PointModel {
   getDestinations() {
     return this.destinations;
   }
+
+  getDestinationById(id) {
+    return this.destinations.find((item) => item.id === id);
+  }
+
+  getOffersByType(point) {
+    return this.offers.find((offer) => offer.type === point.type).offers;
+  }
+
+  getOffersByPoint(point) {
+    return this.getOffersByType(point).filter((typeOffer) => point.offers.includes(typeOffer.id));
+  }
+
+  getDestinationByPoint(point) {
+    return this.getDestinations().find((destination) => destination.id === point.destination);
+  }
 }

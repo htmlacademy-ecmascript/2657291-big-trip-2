@@ -6,7 +6,7 @@ export const mockRoutePoint = [
     dateTo: '2024-03-18T11:00:00',
     destination: '1',
     isFavorite: true,
-    offers: ['2t'],
+    offers: ['2t', '1t'],
     type: 'taxi'
   },
   {

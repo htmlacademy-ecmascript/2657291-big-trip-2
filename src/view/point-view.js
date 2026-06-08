@@ -1,8 +1,8 @@
 import { createElement } from '../render.js';
 import { formatDate, getDuration } from '../utils.js';
 
-function createTemplate(point, destinations, offers) {
-  const { basePrice, isFavorite, dateFrom, dateTo, type } = point;
+function createTemplate(pointData, pointModel) {
+  const { basePrice, isFavorite, dateFrom, dateTo, type } = pointData;
 
   /*const foundOffer = offers.find((offer) => offer.type === point.type);
   if (!foundOffer) {
@@ -11,10 +11,6 @@ function createTemplate(point, destinations, offers) {
     return '<li>Ошибка: нет данных для этого типа</li>';
   }*/
 
-  const typeOffers = offers.find((offer) => offer.type === point.type).offers;
-  const pointOffers = typeOffers.filter((typeOffer) => point.offers.includes(typeOffer.id));
-  const pointDestination = destinations.find((destination) => destination.id === point.destination) || { name: 'Unknown' };
-
   return (`
     <li class="trip-events__item">
       <div class="event">
@@ -22,7 +18,7 @@ function createTemplate(point, destinations, offers) {
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type.toLowerCase()}.png" alt="Event type icon">
         </div>
-        <h3 class="event__title">${type} ${pointDestination.name}</h3>
+        <h3 class="event__title">${type} ${pointModel.getDestinationByPoint(pointData).name || 'unknown'}</h3>
         <div class="event__schedule">
           <p class="event__time">
             <time class="event__start-time" datetime="${formatDate(dateFrom, 'date-time')}">${formatDate(dateFrom, 'time')}</time>
@@ -36,7 +32,7 @@ function createTemplate(point, destinations, offers) {
         </p>
         <h4 class="visually-hidden">Offers:</h4>
         <ul class="event__selected-offers">
-          ${pointOffers.map((offer) => `
+          ${pointModel.getOffersByPoint(pointData).map((offer) => `
             <li class="event__offer">
               <span class="event__offer-title">${offer.title}</span>
               &plus;&euro;&nbsp;
@@ -59,14 +55,14 @@ function createTemplate(point, destinations, offers) {
 }
 
 export default class PointView {
-  constructor(point, destinations, offers) {
-    this.point = point;
-    this.destinations = destinations;
-    this.offers = offers;
+  constructor(pointData, pointModel) {
+    this.pointModel = pointModel;
+    this.pointData = pointData;
+    //console.log(this.pointData);
   }
 
   getTemplate() {
-    return createTemplate(this.point, this.destinations, this.offers);
+    return createTemplate(this.pointData, this.pointModel);
   }
 
   getElement() {

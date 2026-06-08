@@ -1,7 +1,7 @@
 import { createElement } from '../render.js';
 //import { formatDate, getDuration } from '../utils.js';
 
-function createTemplate(point /*destinations, offers*/) {
+function createTemplate(point, pointModel) {
   return (`
     <li class="trip-events__item">
       <form class="event event--edit" action="#" method="post">
@@ -69,7 +69,7 @@ function createTemplate(point /*destinations, offers*/) {
             <label class="event__label  event__type-output" for="event-destination-1">
               Flight
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${point.destination}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${pointModel.getOffersByPoint(point).name}" list="destination-list-1">
             <datalist id="destination-list-1">
               <option value="Amsterdam"></option>
               <option value="Geneva"></option>
@@ -162,14 +162,13 @@ function createTemplate(point /*destinations, offers*/) {
 }
 
 export default class FormEditView {
-  constructor(point, destinations, offers) {
+  constructor(point, destinations, offers, pointModel) {
     this.point = point;
-    this.destinations = destinations;
-    this.offers = offers;
+    this.pointModel = pointModel;
   }
 
   getTemplate() {
-    return createTemplate(this.point, this.destinations, this.offers);
+    return createTemplate(this.point, this.pointModel);
   }
 
   getElement() {
