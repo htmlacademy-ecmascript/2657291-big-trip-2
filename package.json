@@ -29,6 +29,9 @@
   "engines": {
     "node": "20"
   },
+  "dependencies": {
+    "dayjs": "1.11.6"
+  },
   "main": "index.js",
   "repository": {
     "type": "git",
