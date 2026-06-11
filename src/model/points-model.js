@@ -42,4 +42,8 @@ export default class PointModel {
   getDestinationByPoint(point) {
     return this.getDestinations().find((destination) => destination.id === point.destination);
   }
+
+  isChecked(point, offerId) {
+    return point.offers.includes(offerId);
+  }
 }

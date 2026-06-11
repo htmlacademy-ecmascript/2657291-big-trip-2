@@ -25,11 +25,11 @@ export const mockDestination =
       name: 'Moscow',
       pictures: [
         {
-          'src': `https://loremflickr.com/248/152?random=${getRandomPoints()}`,
+          'src': '/img/photos/1.jpg',
           'description': 'Описание картинки Москва'
         },
         {
-          'src': `https://loremflickr.com/248/152?random=${getRandomPoints()}`,
+          'src': '/img/photos/2.jpg',
           'description': 'Описание картинки Москва'
         }
       ]

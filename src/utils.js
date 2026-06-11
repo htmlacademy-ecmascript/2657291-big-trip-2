@@ -32,14 +32,27 @@ export const formatDate = (date, format) => {
 export function getDuration(dateFrom, dateTo) {
   const start = new Date(dateFrom);
   const end = new Date(dateTo);
-  const difference = end - start; // разница в миллисекундах
+  const diff = end - start; // разница в миллисекундах
 
-  const minutes = Math.floor(difference / 60000);
-  const hours = Math.floor(minutes / 60);
-  const restMinutes = minutes % 60;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (3600000)) / (1000 * 60));
+
+  let result = '';
 
   if (hours > 0) {
-    return `${hours}H ${restMinutes}M`;
+    result += `${hours} ч`;
   }
-  return `${restMinutes}M`;
+
+  if (minutes > 0) {
+    if (result) {
+      result += ' ';
+    }
+    result += `${minutes} м`;
+  }
+
+  if (result === '') {
+    result = '0 м';
+  }
+
+  return result;
 }

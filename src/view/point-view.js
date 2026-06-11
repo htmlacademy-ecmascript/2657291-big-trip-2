@@ -4,13 +4,6 @@ import { formatDate, getDuration } from '../utils.js';
 function createTemplate(pointData, pointModel) {
   const { basePrice, isFavorite, dateFrom, dateTo, type } = pointData;
 
-  /*const foundOffer = offers.find((offer) => offer.type === point.type);
-  if (!foundOffer) {
-    console.error('Не найден offer для типа:', point.type);
-    console.log('Доступные типы offers:', offers.map((o) => o.type));
-    return '<li>Ошибка: нет данных для этого типа</li>';
-  }*/
-
   return (`
     <li class="trip-events__item">
       <div class="event">
