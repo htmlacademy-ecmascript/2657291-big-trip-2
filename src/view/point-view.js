@@ -1,5 +1,5 @@
-import { createElement } from '../render.js';
 import { formatDate, getDuration } from '../utils.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 function createTemplate(pointData, pointModel) {
   const { basePrice, isFavorite, dateFrom, dateTo, type } = pointData;
@@ -47,25 +47,18 @@ function createTemplate(pointData, pointModel) {
   `);
 }
 
-export default class PointView {
-  constructor(pointData, pointModel) {
-    this.pointModel = pointModel;
-    this.pointData = pointData;
+export default class PointView extends AbstractView {
+  #pointModel = null;
+  #pointData = null;
+
+  constructor({pointData, pointModel}) {
+    super();
+    this.#pointModel = pointModel;
+    this.#pointData = pointData;
     //console.log(this.pointData);
   }
 
-  getTemplate() {
-    return createTemplate(this.pointData, this.pointModel);
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
+  get template() { /*Переделать на геттер. Посмотреть как?*/
+    return createTemplate(this.#pointData, this.#pointModel);
   }
 }

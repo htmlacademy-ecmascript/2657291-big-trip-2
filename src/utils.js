@@ -56,3 +56,19 @@ export function getDuration(dateFrom, dateTo) {
 
   return result;
 }
+
+export function formatDateForInput(date) {
+  if (!date) {
+    return '';
+  }
+
+  const parsedDate = dayjs(date);
+
+  const day = String(parsedDate.date()).padStart(2, '0');
+  const month = String(parsedDate.month() + 1).padStart(2, '0');
+  const year = String(parsedDate.year()).slice(-2);
+  const hours = String(parsedDate.hour()).padStart(2, '0');
+  const minutes = String(parsedDate.minute()).padStart(2, '0');
+
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
