@@ -1,5 +1,5 @@
-import { formatDate, getDuration } from '../utils.js';
 import AbstractView from '../framework/view/abstract-view.js';
+import { formatDate, getDuration } from '../utils.js';
 
 function createTemplate(pointData, pointModel) {
   const { basePrice, isFavorite, dateFrom, dateTo, type } = pointData;
@@ -50,15 +50,26 @@ function createTemplate(pointData, pointModel) {
 export default class PointView extends AbstractView {
   #pointModel = null;
   #pointData = null;
+  #onEditClick = null;
 
-  constructor({pointData, pointModel}) {
+  constructor({ pointData, pointModel, onEditClick }) {
     super();
     this.#pointModel = pointModel;
     this.#pointData = pointData;
-    //console.log(this.pointData);
+    this.#onEditClick = onEditClick;
   }
 
-  get template() { /*Переделать на геттер. Посмотреть как?*/
+  get template() {
     return createTemplate(this.#pointData, this.#pointModel);
+  }
+
+  #openEditForm = (evt) => {
+    evt.preventDefault();
+    this.#onEditClick();
+  };
+
+  setEditClickHandler() {
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#openEditForm);
   }
 }

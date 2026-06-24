@@ -28,7 +28,7 @@ function createNewFilterTemplate() {
 }
 
 export default class FilterView extends AbstractView {
-  get template() { /*Переделать на геттер. Посмотреть как?*/
+  get template() {
     return createNewFilterTemplate();
   }
 }

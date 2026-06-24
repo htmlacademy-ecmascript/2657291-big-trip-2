@@ -1,4 +1,4 @@
-import { render } from '../framework/render.js';
+import { render, replace } from '../framework/render.js';  // ← replace импортирован
 import FilterView from '../view/filters-view.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
@@ -10,7 +10,7 @@ export default class BoardPresenter {
   #sortComponent = new SortView();
   #pointList = new PointListView();
 
-  #boardPoints = [];
+  #allPoints = [];
   #filterContainer = null;
   #contentContainer = null;
   #pointModel = null;
@@ -22,7 +22,7 @@ export default class BoardPresenter {
   }
 
   init() {
-    this.#boardPoints = [...this.#pointModel.getPoints()];
+    this.#allPoints = [...this.#pointModel.getPoints()];
     this.#renderBoard();
   }
 
@@ -35,27 +35,44 @@ export default class BoardPresenter {
   }
 
   #renderPoints() {
-    if (this.#boardPoints.length === 0) {
+    if (this.#allPoints.length === 0) {
       return;
     }
 
     const pointListElement = this.#pointList.element;
 
-    // Первая точка - форма редактирования
-    const firstPoint = this.#boardPoints[0];
-    const formView = new FormEditView({
-      point: firstPoint,
-      pointModel: this.#pointModel
+    this.#allPoints.forEach((point) => {
+      this.#renderPoint(point, pointListElement);
     });
-    render(formView, pointListElement);
+  }
 
-    // Отрисовка остальных точек
-    for (let i = 1; i < this.#boardPoints.length; i++) {
-      const pointView = new PointView({
-        pointData: this.#boardPoints[i],
-        pointModel: this.#pointModel
-      });
-      render(pointView, pointListElement);
-    }
+  #renderPoint(point, container) {
+    const pointView = new PointView({
+      pointData: point,
+      pointModel: this.#pointModel,
+      onEditClick: () => this.#replacePointToForm(point, pointView)
+    });
+
+    render(pointView, container);
+    pointView.setEditClickHandler();
+  }
+
+  #replacePointToForm(point, pointView) {
+    const formView = new FormEditView({
+      point: point,
+      pointModel: this.#pointModel,
+      onSave: () => this.#replaceFormToPoint(formView, pointView),
+      onClose: () => this.#replaceFormToPoint(formView, pointView)
+    });
+
+    replace(formView, pointView);
+    formView.setSaveHandler();
+    formView.setCloseHandler();
+  }
+
+  #replaceFormToPoint(formView, pointView) {
+    replace(pointView, formView);
+    pointView.setEditClickHandler();
+    formView.removeElement();
   }
 }

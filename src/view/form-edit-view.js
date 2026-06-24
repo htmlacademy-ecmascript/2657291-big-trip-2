@@ -132,15 +132,52 @@ function createTemplate(point, pointModel) {
 export default class FormEditView extends AbstractView {
   #point = null;
   #pointModel = null;
+  #onSave = null;
+  #onClose = null;
 
-  constructor({ point, pointModel }) {
+  constructor({ point, pointModel, onSave, onClose }) {
     super();
     this.#point = point;
     this.#pointModel = pointModel;
+
+    this.#onSave = onSave;
+    this.#onClose = onClose;
   }
 
   get template() { /*Переделать на геттер. Посмотреть как?*/
     return createTemplate(this.#point, this.#pointModel);
+  }
+
+  #handleSave = (evt) => {
+    evt.preventDefault();
+    this.#onSave();
+  };
+
+  #handleCloseClick = (evt) => {
+    evt.preventDefault();
+    this.#onClose();
+  };
+
+  #handleEscKeydown = (evt) => {
+    if (evt.key === 'Escape') {
+      evt.preventDefault();
+      this.#onClose();
+    }
+  };
+
+  setSaveHandler() {
+    this.element.querySelector('form').addEventListener('submit', this.#handleSave);
+  }
+
+  setCloseHandler() {
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#handleCloseClick);
+    document.addEventListener('keydown', this.#handleEscKeydown);
+  }
+
+  removeElement() {
+    document.removeEventListener('keydown', this.#handleEscKeydown);
+    super.removeElement();
   }
 }
 
