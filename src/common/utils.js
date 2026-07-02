@@ -1,4 +1,4 @@
-import { mockRoutePoint } from './mock/points';
+import { mockRoutePoint } from '../mock/points';
 import dayjs from 'dayjs';
 
 const DATE_FORMAT = 'D MMMM';

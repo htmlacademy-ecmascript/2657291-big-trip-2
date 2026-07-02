@@ -1,4 +1,4 @@
-import { render, replace } from '../framework/render.js';  // ← replace импортирован
+import { render, replace } from '../framework/render.js';
 import FilterView from '../view/filters-view.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
@@ -22,7 +22,7 @@ export default class BoardPresenter {
   }
 
   init() {
-    this.#allPoints = [...this.#pointModel.getPoints()];
+    this.#allPoints = [...this.#pointModel.points];
     this.#renderBoard();
   }
 

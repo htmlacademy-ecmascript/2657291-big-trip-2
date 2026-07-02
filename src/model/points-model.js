@@ -7,15 +7,15 @@ export default class PointModel {
   #offers = mockOffers;
   #destinations = mockDestination;
 
-  get Points() {
+  get points() {
     return this.#points;
   }
 
-  get Offers() {
+  get getOffersByPointffers() {
     return this.#offers;
   }
 
-  get Destinations() {
+  get destinations() {
     return this.#destinations;
   }
 
@@ -32,7 +32,7 @@ export default class PointModel {
   }
 
   getDestinationByPoint(point) {
-    return this.getDestinations().find((destination) => destination.id === point.destination);
+    return this.destinations.find((destination) => destination.id === point.destination);
   }
 
   isChecked(point, offerId) {

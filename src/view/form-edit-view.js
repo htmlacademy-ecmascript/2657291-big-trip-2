@@ -1,7 +1,7 @@
 import { POINTS_TYPES } from '../const';
 import AbstractView from '../framework/view/abstract-view.js';
-import { formatDateForInput } from '../utils.js';
-//import { formatDate, getDuration } from '../utils.js';
+import { formatDateForInput } from '../common/utils.js';
+//import { formatDate, getDuration } from '../common/utils.js';
 
 function createTemplate(point, pointModel) {
   return (`
@@ -47,7 +47,7 @@ function createTemplate(point, pointModel) {
                 value="${pointModel.getDestinationByPoint(point).name}"
                 list="destination-list-1">
             <datalist id="destination-list-1">
-              ${pointModel.getDestinations().map((destination) => `
+              ${pointModel.destinations.map((destination) => `
                 <option value="${destination.name}"></option>
               `).join('')}
             </datalist>
