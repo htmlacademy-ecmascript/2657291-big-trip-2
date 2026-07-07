@@ -1,7 +1,7 @@
-import { createElement } from '../render.js';
-import { formatDate, getDuration } from '../utils.js';
+import AbstractView from '../../framework/view/abstract-view.js';
+import { formatDate, getDuration } from '../../common/utils.js';
 
-function createTemplate(pointData, pointModel) {
+function createTemplate(pointData, offers, destinationName) {
   const { basePrice, isFavorite, dateFrom, dateTo, type } = pointData;
 
   return (`
@@ -11,7 +11,7 @@ function createTemplate(pointData, pointModel) {
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type.toLowerCase()}.png" alt="Event type icon">
         </div>
-        <h3 class="event__title">${type} ${pointModel.getDestinationByPoint(pointData).name || 'unknown'}</h3>
+        <h3 class="event__title">${type} ${destinationName || 'unknown'}</h3>
         <div class="event__schedule">
           <p class="event__time">
             <time class="event__start-time" datetime="${formatDate(dateFrom, 'date-time')}">${formatDate(dateFrom, 'time')}</time>
@@ -25,7 +25,7 @@ function createTemplate(pointData, pointModel) {
         </p>
         <h4 class="visually-hidden">Offers:</h4>
         <ul class="event__selected-offers">
-          ${pointModel.getOffersByPoint(pointData).map((offer) => `
+          ${offers.map((offer) => `
             <li class="event__offer">
               <span class="event__offer-title">${offer.title}</span>
               &plus;&euro;&nbsp;
@@ -47,25 +47,27 @@ function createTemplate(pointData, pointModel) {
   `);
 }
 
-export default class PointView {
-  constructor(pointData, pointModel) {
-    this.pointModel = pointModel;
-    this.pointData = pointData;
-    //console.log(this.pointData);
+export default class PointView extends AbstractView {
+  #pointModel = null;
+  #pointData = null;
+  #onEditClick = null;
+
+  constructor({ pointData, offers, destinationName, onEditClick }) {
+    super();
+    this.#pointData = pointData;
+    this.#onEditClick = onEditClick;
+    this.offers = offers;
+    this.destinationName = destinationName;
+
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#openEditForm);
   }
 
-  getTemplate() {
-    return createTemplate(this.pointData, this.pointModel);
+  get template() {
+    return createTemplate(this.#pointData, this.offers, this.destinationName);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #openEditForm = (evt) => {
+    evt.preventDefault();
+    this.#onEditClick();
+  };
 }

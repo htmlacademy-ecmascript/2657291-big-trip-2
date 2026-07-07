@@ -3,36 +3,28 @@ import { mockOffers } from '../mock/offers';
 import { mockRoutePoint } from '../mock/points';
 
 export default class PointModel {
-  constructor() {
-    this.points = [];
-    this.offers = [];
-    this.destinations = [];
+  #points = mockRoutePoint;
+  #offers = mockOffers;
+  #destinations = mockDestination;
+
+  get points() {
+    return this.#points;
   }
 
-  init() {
-    this.points = mockRoutePoint;
-    this.offers = mockOffers;
-    this.destinations = mockDestination;
+  get getOffersByPointffers() {
+    return this.#offers;
   }
 
-  getPoints() {
-    return this.points;
-  }
-
-  getOffers() {
-    return this.offers;
-  }
-
-  getDestinations() {
-    return this.destinations;
+  get destinations() {
+    return this.#destinations;
   }
 
   getDestinationById(id) {
-    return this.destinations.find((item) => item.id === id);
+    return this.#destinations.find((item) => item.id === id);
   }
 
   getOffersByType(point) {
-    return this.offers.find((offer) => offer.type === point.type).offers;
+    return this.#offers.find((offer) => offer.type === point.type).offers;
   }
 
   getOffersByPoint(point) {
@@ -40,7 +32,7 @@ export default class PointModel {
   }
 
   getDestinationByPoint(point) {
-    return this.getDestinations().find((destination) => destination.id === point.destination);
+    return this.destinations.find((destination) => destination.id === point.destination);
   }
 
   isChecked(point, offerId) {

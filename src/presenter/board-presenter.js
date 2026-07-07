@@ -1,37 +1,52 @@
-import { render } from '../render.js';
+import { render } from '../framework/render.js';
 import FilterView from '../view/filters-view.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
-import FormEditView from '../view/form-edit-view.js';
-import PointView from '../view/point-view.js';
-//import PointModel from '../model/points-model.js';
+import PointPresenter from './point-presenter.js';
+
 export default class BoardPresenter {
-  filterComponent = new FilterView();
-  sortComponent = new SortView();
-  pointList = new PointListView();
-  editPoint = null;
+  #filterComponent = new FilterView();
+  #sortComponent = new SortView();
+  #pointList = new PointListView();
+
+  #allPoints = [];
+  #filterContainer = null;
+  #contentContainer = null;
+  #pointModel = null;
 
   constructor({ filterContainer, contentContainer, pointModel }) {
-    this.filterContainer = filterContainer;
-    this.contentContainer = contentContainer;
-    this.pointModel = pointModel;
+    this.#filterContainer = filterContainer;
+    this.#contentContainer = contentContainer;
+    this.#pointModel = pointModel;
   }
 
   init() {
-    const points = this.pointModel.getPoints();
-    const offers = this.pointModel.getOffers();
-    const destinations = this.pointModel.getDestinations();
+    this.#allPoints = [...this.#pointModel.points];
+    this.#renderBoard();
+  }
 
-    render(this.filterComponent, this.filterContainer);
-    render(this.sortComponent, this.contentContainer);
-    render(this.pointList, this.contentContainer);
+  #renderBoard() {
+    render(this.#filterComponent, this.#filterContainer);
+    render(this.#sortComponent, this.#contentContainer);
+    render(this.#pointList, this.#contentContainer);
 
-    const firstPoint = points[0];
-    this.editPoint = new FormEditView(firstPoint, destinations, offers, this.pointModel);
-    render(this.editPoint, this.pointList.getElement());
+    this.#renderPoints();
+  }
 
-    for (let i = 0; i < points.length; i++) {
-      render(new PointView(points[i], this.pointModel), this.pointList.getElement());
+  #renderPoints() {
+    if (this.#allPoints.length === 0) {
+      return;
     }
+
+    this.#allPoints.forEach((point) => {
+      const pointPresenter = new PointPresenter(
+        {
+          point,
+          model: this.#pointModel,
+          container: this.#pointList.element
+        }
+      );
+      pointPresenter.init();
+    });
   }
 }
