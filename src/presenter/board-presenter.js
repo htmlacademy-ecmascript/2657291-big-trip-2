@@ -1,9 +1,8 @@
-import { render, replace } from '../framework/render.js';
+import { render } from '../framework/render.js';
 import FilterView from '../view/filters-view.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
-import FormEditView from '../view/form-edit-view.js';
-import PointView from '../view/point-view.js';
+import PointPresenter from './point-presenter.js';
 
 export default class BoardPresenter {
   #filterComponent = new FilterView();
@@ -39,40 +38,15 @@ export default class BoardPresenter {
       return;
     }
 
-    const pointListElement = this.#pointList.element;
-
     this.#allPoints.forEach((point) => {
-      this.#renderPoint(point, pointListElement);
+      const pointPresenter = new PointPresenter(
+        {
+          point,
+          model: this.#pointModel,
+          container: this.#pointList.element
+        }
+      );
+      pointPresenter.init();
     });
-  }
-
-  #renderPoint(point, container) {
-    const pointView = new PointView({
-      pointData: point,
-      pointModel: this.#pointModel,
-      onEditClick: () => this.#replacePointToForm(point, pointView)
-    });
-
-    render(pointView, container);
-    pointView.setEditClickHandler();
-  }
-
-  #replacePointToForm(point, pointView) {
-    const formView = new FormEditView({
-      point: point,
-      pointModel: this.#pointModel,
-      onSave: () => this.#replaceFormToPoint(formView, pointView),
-      onClose: () => this.#replaceFormToPoint(formView, pointView)
-    });
-
-    replace(formView, pointView);
-    formView.setSaveHandler();
-    formView.setCloseHandler();
-  }
-
-  #replaceFormToPoint(formView, pointView) {
-    replace(pointView, formView);
-    pointView.setEditClickHandler();
-    formView.removeElement();
   }
 }

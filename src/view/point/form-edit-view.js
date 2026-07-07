@@ -1,9 +1,9 @@
-import { POINTS_TYPES } from '../const';
-import AbstractView from '../framework/view/abstract-view.js';
-import { formatDateForInput } from '../common/utils.js';
+import { POINTS_TYPES } from '../../const';
+import AbstractView from '../../framework/view/abstract-view.js';
+import { formatDateForInput } from '../../common/utils.js';
 //import { formatDate, getDuration } from '../common/utils.js';
 
-function createTemplate(point, pointModel) {
+function createTemplate(point, offers, destinationName, destinations, description, pictures) {
   return (`
     <li class="trip-events__item">
       <form class="event event--edit" action="#" method="post">
@@ -44,10 +44,10 @@ function createTemplate(point, pointModel) {
                 id="event-destination-1"
                 type="text"
                 name="event-destination"
-                value="${pointModel.getDestinationByPoint(point).name}"
+                value="${destinationName || ''}"
                 list="destination-list-1">
             <datalist id="destination-list-1">
-              ${pointModel.destinations.map((destination) => `
+              ${destinations.map((destination) => `
                 <option value="${destination.name}"></option>
               `).join('')}
             </datalist>
@@ -93,14 +93,14 @@ function createTemplate(point, pointModel) {
 
             <div class="event__available-offers">
 
-            ${pointModel.getOffersByType(point).map((offer) => (`
+            ${offers.map((offer) => (`
               <div class="event__offer-selector">
                 <input
                  class="event__offer-checkbox  visually-hidden"
                  id="${offer.id}"
                  type="checkbox"
                  name="event-offer-luggage"
-                 ${pointModel.isChecked(point, offer.id) ? 'checked' : ''}
+                 ${point.offers.includes(offer.id) ? 'checked' : ''}
                  >
                 <label class="event__offer-label" for="event-offer-luggage-1">
                   <span class="event__offer-title">${offer.title}</span>
@@ -114,11 +114,11 @@ function createTemplate(point, pointModel) {
 
           <section class="event__section  event__section--destination">
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-            <p class="event__destination-description">${pointModel.getDestinationByPoint(point).description}</p>
+            <p class="event__destination-description">${description || ''}</p>
             <div class="event__photos-container">
               <div class="event__photos-tape">
-                ${pointModel.getDestinationByPoint(point).pictures.map(({ src, description}) => (`
-                  <img class="event__photo" src=${src}"img/photos/1.jpg" alt=${description}>
+                ${pictures.map(({ src, description: pictureDescription }) => (`
+                  <img class="event__photo" src=${src} alt=${pictureDescription}>
                 `)).join('')}
               </div>
             </div>
@@ -131,21 +131,38 @@ function createTemplate(point, pointModel) {
 
 export default class FormEditView extends AbstractView {
   #point = null;
-  #pointModel = null;
+  #offers = [];
+  #destinationName = '';
+  #destinations = [];
+  #description = '';
+  #pictures = [];
   #onSave = null;
   #onClose = null;
 
-  constructor({ point, pointModel, onSave, onClose }) {
+  constructor({ point, offers, destinationName, destinations, description, pictures, onSave, onClose }) {
     super();
-    this.#point = point;
-    this.#pointModel = pointModel;
 
+    this.#point = point;
+    this.#offers = offers;
+    this.#destinationName = destinationName;
+    this.#destinations = destinations;
+    this.#description = description;
+    this.#pictures = pictures;
     this.#onSave = onSave;
     this.#onClose = onClose;
+
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handleCloseClick);
   }
 
-  get template() { /*Переделать на геттер. Посмотреть как?*/
-    return createTemplate(this.#point, this.#pointModel);
+  get template() {
+    return createTemplate(
+      this.#point,
+      this.#offers,
+      this.#destinationName,
+      this.#destinations,
+      this.#description,
+      this.#pictures
+    );
   }
 
   #handleSave = (evt) => {
@@ -158,25 +175,20 @@ export default class FormEditView extends AbstractView {
     this.#onClose();
   };
 
-  #handleEscKeydown = (evt) => {
-    if (evt.key === 'Escape') {
-      evt.preventDefault();
-      this.#onClose();
-    }
-  };
+  // #handleEscKeydown = (evt) => {
+  //   if (evt.key === 'Escape') {
+  //     evt.preventDefault();
+  //     this.#onClose();
+  //   }
+  // };
 
   setSaveHandler() {
     this.element.querySelector('form').addEventListener('submit', this.#handleSave);
-  }
 
-  setCloseHandler() {
-    this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#handleCloseClick);
-    document.addEventListener('keydown', this.#handleEscKeydown);
   }
 
   removeElement() {
-    document.removeEventListener('keydown', this.#handleEscKeydown);
+    // document.removeEventListener('keydown', this.#handleEscKeydown);
     super.removeElement();
   }
 }

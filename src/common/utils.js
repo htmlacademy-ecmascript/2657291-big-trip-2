@@ -1,6 +1,8 @@
 import { mockRoutePoint } from '../mock/points';
 import dayjs from 'dayjs';
 
+export const isEscape = ({key}) => key === 'Escape';
+
 const DATE_FORMAT = 'D MMMM';
 
 export const getRandomPoints = () => {
