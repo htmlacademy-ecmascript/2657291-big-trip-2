@@ -23,9 +23,19 @@ export const filter = {
   [FilterType.PAST]: (points) => points.filter((point) => isPointPast(point.dateTo))
 };
 
+const FILTER_NAMES = {
+  [FilterType.EVERYTHING]: 'Everything',
+  [FilterType.FUTURE]: 'Future',
+  [FilterType.PRESENT]: 'Present',
+  [FilterType.PAST]: 'Past'
+};
+
 export function generateFilters(points) {
-  return Object.entries(filter).map(([filterType, filterPoints]) => ({
+  const filters = Object.entries(filter).map(([filterType, filterPoints]) => ({
     type: filterType,
+    name: FILTER_NAMES[filterType],
     count: filterPoints(points).length
   }));
+
+  return filters;
 }
