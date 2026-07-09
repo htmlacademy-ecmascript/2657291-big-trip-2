@@ -1,12 +1,17 @@
-const COUNT_POINT = 6;
+export const COUNT_POINT = 6;
 
-const POINTS_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+export const POINTS_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 
-const FilterType = {
+export const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
   PRESENT: 'present',
   PAST: 'past'
 };
 
-export { COUNT_POINT, POINTS_TYPES, FilterType };
+export const FILTER_NAMES = {
+  [FilterType.EVERYTHING]: 'Everything',
+  [FilterType.FUTURE]: 'Future',
+  [FilterType.PRESENT]: 'Present',
+  [FilterType.PAST]: 'Past'
+};
