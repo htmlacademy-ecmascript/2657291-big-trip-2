@@ -8,10 +8,12 @@ export default class PointPresenter{
   constructor({
     point,
     model,
+    //onFormOpen,
     container
   }){
     this.point = point;
     this.#pointModel = model;
+    //this.#onFormOpen = onFormOpen;
     this.container = container;
   }
 
@@ -23,7 +25,10 @@ export default class PointPresenter{
         document.addEventListener('keydown', this.#onDocumentKeydown);
       },
       offers: this.#pointModel.getOffersByPoint(this.point),
-      destinationName:  this.#pointModel.getDestinationByPoint(this.point).name
+      destinationName:  this.#pointModel.getDestinationByPoint(this.point).name,
+      onFavoriteClick: () => {
+        replace(this.point, this.pointView);
+      }
     });
 
     this.formView = new FormEditView({
@@ -65,4 +70,7 @@ export default class PointPresenter{
       document.removeEventListener('keydown', this.#onDocumentKeydown);
     }
   };
+
+
+  //#resetView() {};
 }

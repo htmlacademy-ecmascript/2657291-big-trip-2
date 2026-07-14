@@ -78,4 +78,8 @@ export default class BoardPresenter {
     this.#currentFilterType = filterType;
     this.#renderPoints();
   };
+
+  #pointPresenters = new Map();
+
+  //#resetAllForms();
 }
