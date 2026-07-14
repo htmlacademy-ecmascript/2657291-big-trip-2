@@ -2,66 +2,92 @@ import PointView from '../view/point/point-view.js';
 import FormEditView from '../view/point/form-edit-view.js';
 import { render, replace } from '../framework/render.js';
 import {isEscape} from '../common/utils.js';
-
+import { Mode } from '../const.js';
 export default class PointPresenter{
+  #point = null;
   #pointModel = null;
-  constructor({
-    point,
-    model,
-    //onFormOpen,
-    container
-  }){
-    this.point = point;
+  #container = null;
+  #onPointChange = null;
+  #onFormOpen = null;
+  #pointView = null;
+  #formView = null;
+  #mode = Mode.DEFAULT;
+
+  constructor({point, model, container, onPointChange, onFormOpen}) {
+    this.#point = point;
     this.#pointModel = model;
-    //this.#onFormOpen = onFormOpen;
-    this.container = container;
+    this.#container = container;
+    this.#onPointChange = onPointChange;
+    this.#onFormOpen = onFormOpen;
   }
 
-  init(){
-    this.pointView = new PointView({
-      pointData: this.point,
-      onEditClick: () => {
-        this.#openForm(this.point, this.pointView);
-        document.addEventListener('keydown', this.#onDocumentKeydown);
-      },
-      offers: this.#pointModel.getOffersByPoint(this.point),
-      destinationName:  this.#pointModel.getDestinationByPoint(this.point).name,
-      onFavoriteClick: () => {
-        replace(this.point, this.pointView);
-      }
-    });
+  init(updatedPoint){
+    if (updatedPoint) {
+      this.#point = updatedPoint;
+    }
 
-    this.formView = new FormEditView({
-      point: this.point,
-      offers: this.#pointModel.getOffersByType(this.point)?.offers || [],
-      destinationName: this.#pointModel.getDestinationByPoint(this.point)?.name || '',
-      destinations: this.#pointModel.destinations,
-      description: this.#pointModel.getDestinationByPoint(this.point)?.description || '',
-      pictures: this.#pointModel.getDestinationByPoint(this.point)?.pictures || [],
+    this.#pointView?.element?.remove();
+    this.#formView?.element?.remove();
 
-      onSave: () => {
-        this.#closeForm(this.formView, this.pointView);
-        document.removeEventListener('keydown', this.#onDocumentKeydown);
-      },
-      onClose: () => {
-        this.#closeForm(this.formView, this.pointView);
-        document.removeEventListener('keydown', this.#onDocumentKeydown);
-      }
-    });
-
+    this.#createViews();
     this.#renderPoint();
   }
 
+  #createViews() {
+    this.#pointView = new PointView({
+      pointData: this.#point,
+      onEditClick: () => {
+        this.#openForm();
+      },
+      offers: this.#pointModel.getOffersByPoint(this.#point),
+      destinationName:  this.#pointModel.getDestinationByPoint(this.#point).name,
+      onFavoriteClick: () => {
+        const updatedPoint = {
+          ...this.#point,
+          isFavorite: !this.#point.isFavorite
+        };
+        this.#onPointChange(updatedPoint);
+      }
+    });
+
+    this.#formView = new FormEditView({
+      point: this.#point,
+      offers: this.#pointModel.getOffersByType(this.#point)?.offers || [],
+      destinationName: this.#pointModel.getDestinationByPoint(this.#point)?.name || '',
+      destinations: this.#pointModel.destinations,
+      description: this.#pointModel.getDestinationByPoint(this.#point)?.description || '',
+      pictures: this.#pointModel.getDestinationByPoint(this.#point)?.pictures || [],
+
+      onSave: () => {
+        this.#closeForm();
+      },
+      onClose: () => {
+        this.#closeForm();
+      }
+    });
+  }
+
   #renderPoint() {
-    render(this.pointView, this.container);
+    render(this.#pointView, this.#container);
   }
 
   #openForm() {
-    replace(this.formView, this.pointView);
+    if (this.#onFormOpen) {
+      this.#onFormOpen();
+    }
+
+    replace(this.#formView, this.#pointView);
+
+    this.#mode = Mode.EDITING;
+
+    document.addEventListener('keydown', this.#onDocumentKeydown);
   }
 
+
   #closeForm() {
-    replace(this.pointView, this.formView);
+    replace(this.#pointView, this.#formView);
+    this.#mode = Mode.DEFAULT;
+    document.removeEventListener('keydown', this.#onDocumentKeydown);
   }
 
   #onDocumentKeydown = (evt) => {
@@ -71,6 +97,23 @@ export default class PointPresenter{
     }
   };
 
+  #recreateViews() {
+    this.#pointView.element?.remove();
+    this.#formView.element?.remove();
 
-  //#resetView() {};
+    this.#createViews();
+  }
+
+
+  resetView() {
+    if (this.#mode === Mode.EDITING) {
+      this.#closeForm();
+    }
+  }
+
+  destroy() {
+    this.#pointView.element?.remove();
+    this.#formView.element?.remove();
+    document.removeEventListener('keydown', this.#onDocumentKeydown);
+  }
 }
