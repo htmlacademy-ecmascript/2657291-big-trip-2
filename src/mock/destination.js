@@ -1,4 +1,4 @@
-import { getRandomPoints } from '../common/utils';
+import { getRandomNumber } from '../common/utils';
 
 export const mockDestination =
   [
@@ -8,7 +8,7 @@ export const mockDestination =
       name: 'Ryazan',
       pictures: [
         {
-          'src': `https://loremflickr.com/248/152?random=${getRandomPoints()}`,
+          'src': `https://loremflickr.com/248/152?random=${getRandomNumber()}`,
           'description': 'Описание картинки Рязань'
         }
       ]

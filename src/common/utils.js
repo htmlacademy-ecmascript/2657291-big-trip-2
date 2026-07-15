@@ -1,11 +1,12 @@
 import { mockRoutePoint } from '../mock/points';
 import dayjs from 'dayjs';
+import {nanoid} from 'nanoid';
 
 export const isEscape = ({key}) => key === 'Escape';
 
 const DATE_FORMAT = 'D MMMM';
 
-export const getRandomPoints = () => {
+export const getRandomNumber = () => {
   const randomIndex = Math.floor(Math.random() * mockRoutePoint.length);
   return mockRoutePoint[randomIndex];
 };
@@ -73,4 +74,15 @@ export function formatDateForInput(date) {
   const minutes = String(parsedDate.minute()).padStart(2, '0');
 
   return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
+
+export function getRandomPoint() {
+  return {
+    id: nanoid(),
+    ...getRandomNumber(mockRoutePoint)
+  };
+}
+
+export function updateItem(items, update) {
+  return items.map((item) => item.id === update.id ? update : item);
 }

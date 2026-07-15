@@ -6,7 +6,7 @@ import PointPresenter from './point-presenter.js';
 import { generateFilters, filter } from '../common/filter.js';
 import { FilterType } from '../const.js';
 import EmptyView from '../view/empty-view.js';
-
+import { updateItem } from '../common/utils.js';
 export default class BoardPresenter {
   #filterComponent = null;
   #sortComponent = new SortView();
@@ -50,15 +50,18 @@ export default class BoardPresenter {
       return;
     }
 
+    this.#clearPointPresenters();
+
     filteredPoints.forEach((point) => {
-      const pointPresenter = new PointPresenter(
-        {
-          point,
-          model: this.#pointModel,
-          container: this.#pointList.element
-        }
-      );
+      const pointPresenter = new PointPresenter({
+        point,
+        model: this.#pointModel,
+        container: this.#pointList.element,
+        onFormOpen: this.#handleFormOpen,
+        onPointChange: this.#handlePointChange
+      });
       pointPresenter.init();
+      this.#pointPresenters.set(point.id, pointPresenter);
     });
   }
 
@@ -77,5 +80,28 @@ export default class BoardPresenter {
   #onFilterChange = (filterType) => {
     this.#currentFilterType = filterType;
     this.#renderPoints();
+  };
+
+  #pointPresenters = new Map();
+
+  #clearPointPresenters() {
+    this.#pointPresenters.forEach((presenter) => presenter.destroy());
+    this.#pointPresenters.clear();
+  }
+
+  #handleFormOpen = () => {
+    this.#resetAllForms();
+  };
+
+  #resetAllForms() {
+    this.#pointPresenters.forEach((presenter) => presenter.resetView());
+  }
+
+  #handlePointChange = (updatedPoint) => {
+    // Обновляем данные в массиве
+    this.#allPoints = updateItem(this.#allPoints, updatedPoint);
+
+    // Обновляем презентер
+    this.#pointPresenters.get(updatedPoint.id).init(updatedPoint);
   };
 }

@@ -15,3 +15,8 @@ export const FILTER_NAMES = {
   [FilterType.PRESENT]: 'Present',
   [FilterType.PAST]: 'Past'
 };
+
+export const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
