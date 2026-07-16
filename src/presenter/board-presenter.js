@@ -9,14 +9,16 @@ import EmptyView from '../view/empty-view.js';
 import { updateItem } from '../common/utils.js';
 export default class BoardPresenter {
   #filterComponent = null;
-  #sortComponent = new SortView();
+  #sortComponent = null;
   #pointList = new PointListView();
-
   #allPoints = [];
+  #sourcedPoints = [];
+  #currentSortType = 'day';
   #filterContainer = null;
   #contentContainer = null;
   #pointModel = null;
   #currentFilterType = FilterType.EVERYTHING;
+  #pointPresenters = new Map();
 
   constructor({ filterContainer, contentContainer, pointModel }) {
     this.#filterContainer = filterContainer;
@@ -26,14 +28,51 @@ export default class BoardPresenter {
 
   init() {
     this.#allPoints = [...this.#pointModel.points];
+    this.#sourcedPoints = [...this.#pointModel.points];
     this.#renderBoard();
     this.#renderFilters();
   }
 
-  #renderBoard() {
-    render(this.#sortComponent, this.#contentContainer);
-    render(this.#pointList, this.#contentContainer);
+  #sortPoints(sortType) {
+    switch (sortType) {
+      case 'price':
+        this.#allPoints.sort((a, b) => b.basePrice - a.basePrice);
+        break;
+      case 'time':
+        this.#allPoints.sort((a, b) => {
+          const durationA = new Date(a.dateTo) - new Date(a.dateFrom);
+          const durationB = new Date(b.dateTo) - new Date(b.dateFrom);
+          return durationB - durationA;
+        });
+        break;
+      case 'day':
+      default:
+        this.#allPoints = [...this.#sourcedPoints];
+        break;
+    }
+    this.#currentSortType = sortType;
+  }
 
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+
+    this.#sortPoints(sortType);
+    this.#renderPoints();
+  };
+
+  #renderSort() {
+    this.#sortComponent = new SortView({
+      onSortChange: this.#handleSortTypeChange,
+      currentSortType: this.#currentSortType
+    });
+    render(this.#sortComponent, this.#contentContainer);
+  }
+
+  #renderBoard() {
+    this.#renderSort();
+    render(this.#pointList, this.#contentContainer);
     this.#renderPoints();
   }
 
@@ -81,8 +120,6 @@ export default class BoardPresenter {
     this.#currentFilterType = filterType;
     this.#renderPoints();
   };
-
-  #pointPresenters = new Map();
 
   #clearPointPresenters() {
     this.#pointPresenters.forEach((presenter) => presenter.destroy());

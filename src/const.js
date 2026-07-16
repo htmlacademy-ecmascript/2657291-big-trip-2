@@ -20,3 +20,9 @@ export const Mode = {
   DEFAULT: 'DEFAULT',
   EDITING: 'EDITING',
 };
+
+export const SortType = {
+  DEFAULT: 'default',
+  PRICE: 'price',
+  TIME: 'time',
+};
