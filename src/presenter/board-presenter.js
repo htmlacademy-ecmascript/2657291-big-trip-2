@@ -1,4 +1,4 @@
-import { render } from '../framework/render.js';
+import { render, replace } from '../framework/render.js';
 import FilterView from '../view/filters-view.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
@@ -59,6 +59,8 @@ export default class BoardPresenter {
     }
 
     this.#sortPoints(sortType);
+
+    this.#updateSort();
     this.#renderPoints();
   };
 
@@ -118,6 +120,10 @@ export default class BoardPresenter {
 
   #onFilterChange = (filterType) => {
     this.#currentFilterType = filterType;
+    this.#currentSortType = 'day';
+    this.#sortPoints('day');
+    this.#updateSort();
+
     this.#renderPoints();
   };
 
@@ -141,4 +147,21 @@ export default class BoardPresenter {
     // Обновляем презентер
     this.#pointPresenters.get(updatedPoint.id).init(updatedPoint);
   };
+
+  #updateSort() {
+    const newSortComponent = new SortView({
+      onSortChange: this.#handleSortTypeChange,
+      currentSortType: this.#currentSortType
+    });
+
+    if (this.#sortComponent) {
+    // Если старый есть — заменяем его на новый
+      replace(newSortComponent, this.#sortComponent);
+    } else {
+    // Если старого нет — рендерим как обычно
+      render(newSortComponent, this.#contentContainer);
+    }
+
+    this.#sortComponent = newSortComponent;
+  }
 }
