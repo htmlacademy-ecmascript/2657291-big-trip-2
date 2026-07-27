@@ -7,6 +7,7 @@ import { generateFilters, filter } from '../common/filter.js';
 import { FilterType } from '../const.js';
 import EmptyView from '../view/empty-view.js';
 import { updateItem } from '../common/utils.js';
+import FormEditView from '../view/point/form-edit-view.js';
 export default class BoardPresenter {
   #filterComponent = null;
   #sortComponent = null;
@@ -19,6 +20,7 @@ export default class BoardPresenter {
   #pointModel = null;
   #currentFilterType = FilterType.EVERYTHING;
   #pointPresenters = new Map();
+  #addFormView = null;
 
   constructor({ filterContainer, contentContainer, pointModel }) {
     this.#filterContainer = filterContainer;
@@ -163,5 +165,49 @@ export default class BoardPresenter {
     }
 
     this.#sortComponent = newSortComponent;
+  }
+
+  #handlePointAdd = (newPoint) => {
+    this.#pointModel.addPoint(newPoint);
+    this.#allPoints = [...this.#pointModel.points];
+    this.#sourcedPoints = [...this.#pointModel.points];
+    this.#closeAddForm();
+    this.#renderPoints();
+  };
+
+  #openAddForm() {
+    const blankPoint = {
+      id: crypto.randomUUID(),
+      type: 'flight',
+      basePrice: 0,
+      dateFrom: new Date().toISOString(),
+      dateTo: new Date().toISOString(),
+      destination: '',
+      offers: [],
+      isFavorite: false,
+    };
+
+    this.#addFormView = new FormEditView({
+      point: blankPoint,
+      offers: [],
+      destinationName: '',
+      description: '',
+      pictures: [],
+      destinations: this.#pointModel.destinations,
+      pointModel: this.#pointModel,
+      onSave: null,
+      onClose: () => this.#closeAddForm(),
+      isNew: true,
+      onCreate: this.#handlePointAdd,
+    });
+
+    render(this.#addFormView, this.#pointList.element, 'afterbegin');
+  }
+
+  #closeAddForm() {
+    if (this.#addFormView) {
+      this.#addFormView.removeElement();
+      this.#addFormView = null;
+    }
   }
 }

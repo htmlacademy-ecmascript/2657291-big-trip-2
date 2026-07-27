@@ -75,9 +75,12 @@ export default class PointPresenter{
       destinations: this.#pointModel.destinations,
       description: this.#pointModel.getDestinationByPoint(this.#point)?.description || '',
       pictures: this.#pointModel.getDestinationByPoint(this.#point)?.pictures || [],
+      pointModel: this.#pointModel,
 
-      onSave: () => {
+      onSave: (updatedPoint) => {
         this.#closeForm();
+        this.#onPointChange(updatedPoint);
+
       },
       onClose: () => {
         this.#closeForm();
