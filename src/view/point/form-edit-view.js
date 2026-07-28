@@ -1,6 +1,8 @@
 import { POINTS_TYPES } from '../../const';
 import AbstractStatefulView from '../../framework/view/abstract-stateful-view.js';
 import { formatDateForInput } from '../../common/utils.js';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 //import { formatDate, getDuration } from '../common/utils.js';
 
 function createTemplate(point, offers, destinationName, destinations, description, pictures, isNew) {
@@ -136,6 +138,8 @@ export default class FormEditView extends AbstractStatefulView {
   #onClose = null;
   #isNew = false;
   #onCreate = null;
+  #datepickerFrom = null;
+  #datepickerTo = null;
 
   constructor({
     point,
@@ -199,6 +203,14 @@ export default class FormEditView extends AbstractStatefulView {
   };
 
   removeElement() {
+    if (this.#datepickerFrom) {
+      this.#datepickerFrom.destroy();
+      this.#datepickerFrom = null;
+    }
+    if (this.#datepickerTo) {
+      this.#datepickerTo.destroy();
+      this.#datepickerTo = null;
+    }
     super.removeElement();
   }
 
@@ -216,10 +228,40 @@ export default class FormEditView extends AbstractStatefulView {
       .forEach((checkbox) => checkbox.addEventListener('change', this.#handleOfferChange));
     this.element.querySelector('.event__input--price')
       .addEventListener('change', this.#handlePriceChange);
-    this.element.querySelector('#event-start-time-1')
-      .addEventListener('change', this.#handleDateChange);
-    this.element.querySelector('#event-end-time-1')
-      .addEventListener('change', this.#handleDateChange);
+
+    // Поле "от"
+    this.#datepickerFrom = flatpickr(
+      this.element.querySelector('#event-start-time-1'),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._state.point.dateFrom,
+        onChange: (selectedDates) => {
+          if (selectedDates.length) {
+            const isoDate = selectedDates[0].toISOString();
+            const updatedPoint = { ...this._state.point, dateFrom: isoDate };
+            this._setState({ point: updatedPoint });
+          }
+        }
+      }
+    );
+
+    // Поле "до"
+    this.#datepickerTo = flatpickr(
+      this.element.querySelector('#event-end-time-1'),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._state.point.dateTo,
+        onChange: (selectedDates) => {
+          if (selectedDates.length) {
+            const isoDate = selectedDates[0].toISOString();
+            const updatedPoint = { ...this._state.point, dateTo: isoDate };
+            this._setState({ point: updatedPoint });
+          }
+        }
+      }
+    );
   }
 
   #handlePriceChange = (evt) => {
@@ -286,15 +328,5 @@ export default class FormEditView extends AbstractStatefulView {
 
     this._setState({ point: updatedPoint });
   };
-
-  #handleDateChange = (evt) => {
-    const { name, value } = evt.target;
-    // Определяем, какое поле изменилось
-    const key = name === 'event-start-time' ? 'dateFrom' : 'dateTo';
-    const updatedPoint = { ...this._state.point, [key]: value };
-    this._setState({ point: updatedPoint });
-  };
-
-
 }
 
