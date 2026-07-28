@@ -1,14 +1,14 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
-function createSortTemplate(currentSortType) {
-  const sortTypes = [
-    { type: 'day', label: 'Day', isDisabled: false },
-    { type: 'event', label: 'Event', isDisabled: true },
-    { type: 'time', label: 'Time', isDisabled: false },
-    { type: 'price', label: 'Price', isDisabled: false },
-    { type: 'offer', label: 'Offers', isDisabled: true }
-  ];
+const sortTypes = [
+  { type: 'day', label: 'Day', isDisabled: false },
+  { type: 'event', label: 'Event', isDisabled: true },
+  { type: 'time', label: 'Time', isDisabled: false },
+  { type: 'price', label: 'Price', isDisabled: false },
+  { type: 'offer', label: 'Offers', isDisabled: true }
+];
 
+function createSortTemplate(currentSortType) {
   return `
     <form class="trip-events__trip-sort  trip-sort" action="#" method="get">
       ${sortTypes.map(({ type, label, isDisabled }) => `

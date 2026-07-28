@@ -21,16 +21,34 @@ export default class PointPresenter{
     this.#onFormOpen = onFormOpen;
   }
 
-  init(updatedPoint){
+  init(updatedPoint) {
     if (updatedPoint) {
       this.#point = updatedPoint;
     }
 
-    this.#pointView?.element?.remove();
-    this.#formView?.element?.remove();
+    const oldPointView = this.#pointView;
+    const oldFormView = this.#formView;
 
+    // Создаём новые вьюхи с обновлёнными данными
     this.#createViews();
-    this.#renderPoint();
+
+    // Если была открыта форма — закрываем её
+    if (this.#mode === Mode.EDITING) {
+      this.#closeForm();
+    }
+
+    // Заменяем старую точку новой на том же месте
+    if (oldPointView?.element?.parentElement) {
+      replace(this.#pointView, oldPointView);
+      oldPointView.removeElement();
+    } else {
+      render(this.#pointView, this.#container);
+    }
+
+    // Удаляем старую форму, если она была в DOM
+    if (oldFormView?.element?.parentElement) {
+      oldFormView.removeElement();
+    }
   }
 
   #createViews() {
@@ -57,9 +75,12 @@ export default class PointPresenter{
       destinations: this.#pointModel.destinations,
       description: this.#pointModel.getDestinationByPoint(this.#point)?.description || '',
       pictures: this.#pointModel.getDestinationByPoint(this.#point)?.pictures || [],
+      pointModel: this.#pointModel,
 
-      onSave: () => {
+      onSave: (updatedPoint) => {
         this.#closeForm();
+        this.#onPointChange(updatedPoint);
+
       },
       onClose: () => {
         this.#closeForm();

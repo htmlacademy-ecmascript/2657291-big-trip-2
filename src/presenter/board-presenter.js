@@ -1,4 +1,4 @@
-import { render } from '../framework/render.js';
+import { render, replace } from '../framework/render.js';
 import FilterView from '../view/filters-view.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
@@ -7,6 +7,7 @@ import { generateFilters, filter } from '../common/filter.js';
 import { FilterType } from '../const.js';
 import EmptyView from '../view/empty-view.js';
 import { updateItem } from '../common/utils.js';
+import FormEditView from '../view/point/form-edit-view.js';
 export default class BoardPresenter {
   #filterComponent = null;
   #sortComponent = null;
@@ -19,6 +20,7 @@ export default class BoardPresenter {
   #pointModel = null;
   #currentFilterType = FilterType.EVERYTHING;
   #pointPresenters = new Map();
+  #addFormView = null;
 
   constructor({ filterContainer, contentContainer, pointModel }) {
     this.#filterContainer = filterContainer;
@@ -59,6 +61,8 @@ export default class BoardPresenter {
     }
 
     this.#sortPoints(sortType);
+
+    this.#updateSort();
     this.#renderPoints();
   };
 
@@ -118,6 +122,10 @@ export default class BoardPresenter {
 
   #onFilterChange = (filterType) => {
     this.#currentFilterType = filterType;
+    this.#currentSortType = 'day';
+    this.#sortPoints('day');
+    this.#updateSort();
+
     this.#renderPoints();
   };
 
@@ -141,4 +149,65 @@ export default class BoardPresenter {
     // Обновляем презентер
     this.#pointPresenters.get(updatedPoint.id).init(updatedPoint);
   };
+
+  #updateSort() {
+    const newSortComponent = new SortView({
+      onSortChange: this.#handleSortTypeChange,
+      currentSortType: this.#currentSortType
+    });
+
+    if (this.#sortComponent) {
+    // Если старый есть — заменяем его на новый
+      replace(newSortComponent, this.#sortComponent);
+    } else {
+    // Если старого нет — рендерим как обычно
+      render(newSortComponent, this.#contentContainer);
+    }
+
+    this.#sortComponent = newSortComponent;
+  }
+
+  #handlePointAdd = (newPoint) => {
+    this.#pointModel.addPoint(newPoint);
+    this.#allPoints = [...this.#pointModel.points];
+    this.#sourcedPoints = [...this.#pointModel.points];
+    this.#closeAddForm();
+    this.#renderPoints();
+  };
+
+  #openAddForm() {
+    const blankPoint = {
+      id: crypto.randomUUID(),
+      type: 'flight',
+      basePrice: 0,
+      dateFrom: new Date().toISOString(),
+      dateTo: new Date().toISOString(),
+      destination: '',
+      offers: [],
+      isFavorite: false,
+    };
+
+    this.#addFormView = new FormEditView({
+      point: blankPoint,
+      offers: [],
+      destinationName: '',
+      description: '',
+      pictures: [],
+      destinations: this.#pointModel.destinations,
+      pointModel: this.#pointModel,
+      onSave: null,
+      onClose: () => this.#closeAddForm(),
+      isNew: true,
+      onCreate: this.#handlePointAdd,
+    });
+
+    render(this.#addFormView, this.#pointList.element, 'afterbegin');
+  }
+
+  #closeAddForm() {
+    if (this.#addFormView) {
+      this.#addFormView.removeElement();
+      this.#addFormView = null;
+    }
+  }
 }
