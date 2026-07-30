@@ -1,6 +1,9 @@
 import { mockRoutePoint } from '../mock/points';
 import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 import {nanoid} from 'nanoid';
+
+dayjs.extend(duration);
 
 export const isEscape = ({key}) => key === 'Escape';
 
@@ -33,31 +36,29 @@ export const formatDate = (date, format) => {
 };
 
 export function getDuration(dateFrom, dateTo) {
-  const start = new Date(dateFrom);
-  const end = new Date(dateTo);
-  const diff = end - start; // разница в миллисекундах
-
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (3600000)) / (1000 * 60));
-
-  let result = '';
-
-  if (hours > 0) {
-    result += `${hours} ч`;
+  if (!dateFrom || !dateTo) {
+    return '';
   }
 
-  if (minutes > 0) {
-    if (result) {
-      result += ' ';
-    }
-    result += `${minutes} м`;
-  }
+  const diff = dayjs(dateTo).diff(dayjs(dateFrom));
+  const dur = dayjs.duration(diff);
 
-  if (result === '') {
-    result = '0 м';
-  }
+  const days = Math.floor(dur.asDays());
+  const hours = dur.hours();
+  const minutes = dur.minutes();
 
-  return result;
+  const pad = (num) => String(num).padStart(2, '0');
+
+  if (days === 0 && hours === 0) {
+    // Менее часа - только минуты (без нуля)
+    return `${minutes}M`;
+  } else if (days === 0) {
+    // Менее суток - часы и минуты с нулём
+    return `${pad(hours)}H ${pad(minutes)}M`;
+  } else {
+    // Более суток - дни, часы, минуты с нулём
+    return `${pad(days)}D ${pad(hours)}H ${pad(minutes)}M`;
+  }
 }
 
 export function formatDateForInput(date) {
