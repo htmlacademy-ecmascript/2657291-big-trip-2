@@ -12,13 +12,15 @@ export default class PointPresenter{
   #pointView = null;
   #formView = null;
   #mode = Mode.DEFAULT;
+  #onDelete = null;
 
-  constructor({point, model, container, onPointChange, onFormOpen}) {
+  constructor({point, model, container, onPointChange, onFormOpen, onDelete}) {
     this.#point = point;
     this.#pointModel = model;
     this.#container = container;
     this.#onPointChange = onPointChange;
     this.#onFormOpen = onFormOpen;
+    this.#onDelete = onDelete;
   }
 
   init(updatedPoint) {
@@ -58,7 +60,7 @@ export default class PointPresenter{
         this.#openForm();
       },
       offers: this.#pointModel.getOffersByPoint(this.#point),
-      destinationName:  this.#pointModel.getDestinationByPoint(this.#point).name,
+      destinationName: this.#pointModel.getDestinationByPoint(this.#point)?.name || '',
       onFavoriteClick: () => {
         const updatedPoint = {
           ...this.#point,
@@ -84,7 +86,8 @@ export default class PointPresenter{
       },
       onClose: () => {
         this.#closeForm();
-      }
+      },
+      onDelete: this.#handleDelete,
     });
   }
 
@@ -137,4 +140,8 @@ export default class PointPresenter{
     this.#formView.element?.remove();
     document.removeEventListener('keydown', this.#onDocumentKeydown);
   }
+
+  #handleDelete = () => {
+    this.#onDelete(this.#point.id);
+  };
 }

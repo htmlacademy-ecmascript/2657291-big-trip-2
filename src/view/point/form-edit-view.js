@@ -69,7 +69,7 @@ function createTemplate(point, offers, destinationName, destinations, descriptio
                 id="event-end-time-1"
                 type="text"
                 name="event-end-time"
-                value=${formatDateForInput(point.dateTo)}">
+                value="${formatDateForInput(point.dateTo)}">
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -79,7 +79,7 @@ function createTemplate(point, offers, destinationName, destinations, descriptio
             </label>
             <input class="event__input  event__input--price"
                 id="event-price-1"
-                type="text"
+                type="number"
                 name="event-price"
                 value="${point.basePrice}">
           </div>
@@ -105,7 +105,7 @@ function createTemplate(point, offers, destinationName, destinations, descriptio
                  name="event-offer-luggage"
                  ${point.offers.includes(offer.id) ? 'checked' : ''}
                  >
-                <label class="event__offer-label" for="event-offer-luggage-1">
+                <label class="event__offer-label" for="${offer.id}">
                   <span class="event__offer-title">${offer.title}</span>
                   &plus;&euro;&nbsp;
                   <span class="event__offer-price">${offer.price}</span>
@@ -121,7 +121,7 @@ function createTemplate(point, offers, destinationName, destinations, descriptio
             <div class="event__photos-container">
               <div class="event__photos-tape">
                 ${pictures.map(({ src, description: pictureDescription }) => (`
-                  <img class="event__photo" src=${src} alt=${pictureDescription}>
+                  <img class="event__photo" src="${src}" alt=${pictureDescription}>
                 `)).join('')}
               </div>
             </div>
@@ -140,6 +140,7 @@ export default class FormEditView extends AbstractStatefulView {
   #onCreate = null;
   #datepickerFrom = null;
   #datepickerTo = null;
+  #onDelete = null;
 
   constructor({
     point,
@@ -153,6 +154,7 @@ export default class FormEditView extends AbstractStatefulView {
     onClose,
     isNew = false,
     onCreate = null,
+    onDelete = null,
   }) {
     super();
 
@@ -171,6 +173,7 @@ export default class FormEditView extends AbstractStatefulView {
     this.#onClose = onClose;
     this.#isNew = isNew;
     this.#onCreate = onCreate;
+    this.#onDelete = onDelete;
     this._restoreHandlers();
   }
 
@@ -211,6 +214,10 @@ export default class FormEditView extends AbstractStatefulView {
       this.#datepickerTo.destroy();
       this.#datepickerTo = null;
     }
+    const deleteBtn = this.element?.querySelector('.event__reset-btn');
+    if (deleteBtn) {
+      deleteBtn.removeEventListener('click', this.#handleDeleteClick);
+    }
     super.removeElement();
   }
 
@@ -228,6 +235,10 @@ export default class FormEditView extends AbstractStatefulView {
       .forEach((checkbox) => checkbox.addEventListener('change', this.#handleOfferChange));
     this.element.querySelector('.event__input--price')
       .addEventListener('change', this.#handlePriceChange);
+    const deleteBtn = this.element.querySelector('.event__reset-btn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', this.#handleDeleteClick);
+    }
 
     // Поле "от"
     this.#datepickerFrom = flatpickr(
@@ -275,9 +286,14 @@ export default class FormEditView extends AbstractStatefulView {
   #handleTypeChange = (evt) => {
     const newType = evt.target.value;
     const currentState = this._state;
-    const updatedPoint = { ...currentState.point, type: newType };
+    const updatedPoint = { ...currentState.point, type: newType, offers: [] };
     const newOffers = this.#pointModel.getOffersByType(newType) || [];
     this._setState({ point: updatedPoint, offers: newOffers });
+
+    const toggle = this.element.querySelector('#event-type-toggle-1');
+    if (toggle) {
+      toggle.checked = false;
+    }
   };
 
   #handleDestinationChange = (evt) => {
@@ -327,6 +343,13 @@ export default class FormEditView extends AbstractStatefulView {
     }
 
     this._setState({ point: updatedPoint });
+  };
+
+  #handleDeleteClick = (evt) => {
+    evt.preventDefault();
+    if (this.#onDelete) {
+      this.#onDelete();
+    }
   };
 }
 

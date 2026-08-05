@@ -11,8 +11,12 @@ export default class PointModel {
     return this.#points;
   }
 
-  get getOffersByPointffers() {
+  get offers() {
     return this.#offers;
+  }
+
+  set points(newPoints) {
+    this.#points = newPoints;
   }
 
   get destinations() {
@@ -39,4 +43,28 @@ export default class PointModel {
   isChecked(point, offerId) {
     return point.offers.includes(offerId);
   }
+
+  updatePoint(updatedPoint) {
+    const index = this.#points.findIndex((point) => point.id === updatedPoint.id);
+    if (index === -1) {
+      return false;
+    }
+    this.#points[index] = updatedPoint;
+    return true;
+  }
+
+  addPoint(newPoint) {
+    this.#points.push(newPoint);
+    return newPoint;
+  }
+
+  deletePoint(id) {
+    const index = this.#points.findIndex((point) => point.id === id);
+    if (index === -1) {
+      return false;
+    }
+    this.#points.splice(index, 1);
+    return true;
+  }
 }
+

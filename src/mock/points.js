@@ -28,5 +28,15 @@ export const mockRoutePoint = [
     isFavorite: false,
     offers: ['1si'],
     type: 'sightseeing'
+  },
+  {
+    id: 'point-past',
+    basePrice: 30,
+    dateFrom: '2024-01-01T10:00:00',
+    dateTo: '2024-01-01T12:00:00',
+    destination: '1',
+    isFavorite: false,
+    offers: [],
+    type: 'taxi'
   }
 ];
