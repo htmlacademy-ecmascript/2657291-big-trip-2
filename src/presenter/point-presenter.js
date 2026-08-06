@@ -63,27 +63,34 @@ export default class PointPresenter {
       }
     });
 
+    const offersForForm = this.#pointModel.getOffersByType(this.#point) || [];
+
     this.#formView = new FormEditView({
       point: this.#point,
-      offers: this.#pointModel.getOffersByType(this.#point)?.offers || [],
+      offers: offersForForm,
       destinationName: this.#pointModel.getDestinationByPoint(this.#point)?.name || '',
-      destinations: this.#pointModel.destinations,
+      destinations: this.#pointModel.destinations || [],
       description: this.#pointModel.getDestinationByPoint(this.#point)?.description || '',
       pictures: this.#pointModel.getDestinationByPoint(this.#point)?.pictures || [],
       pointModel: this.#pointModel,
+
       onSave: (updatedPoint) => {
+        this.#closeForm();
+
         const isMinorUpdate =
-          !isDatesEqual(this.#point.dateFrom, updatedPoint.dateFrom) ||
-          !isDatesEqual(this.#point.dateTo, updatedPoint.dateTo) ||
-          this.#point.destination !== updatedPoint.destination;
+        !isDatesEqual(this.#point.dateFrom, updatedPoint.dateFrom) ||
+        !isDatesEqual(this.#point.dateTo, updatedPoint.dateTo) ||
+        this.#point.destination !== updatedPoint.destination;
+
         this.#onViewAction(
           UserAction.UPDATE_POINT,
           isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
           updatedPoint,
         );
-        this.#closeForm();
       },
+
       onClose: () => this.#closeForm(),
+
       onDelete: () => {
         this.#onViewAction(UserAction.DELETE_POINT, UpdateType.MINOR, { id: this.#point.id });
       },
@@ -94,13 +101,25 @@ export default class PointPresenter {
     if (this.#onFormOpen) {
       this.#onFormOpen();
     }
-    replace(this.#formView, this.#pointView);
+
+    if (this.#pointView?.element?.parentElement) {
+      replace(this.#formView, this.#pointView);
+    } else {
+      render(this.#formView, this.#container);
+    }
+
+    this.#formView._restoreHandlers();
     this.#mode = Mode.EDITING;
     document.addEventListener('keydown', this.#onDocumentKeydown);
   }
 
   #closeForm() {
-    replace(this.#pointView, this.#formView);
+    if (this.#formView?.element?.parentElement) {
+      replace(this.#pointView, this.#formView);
+    } else {
+      render(this.#pointView, this.#container);
+    }
+
     this.#mode = Mode.DEFAULT;
     document.removeEventListener('keydown', this.#onDocumentKeydown);
   }

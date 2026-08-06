@@ -6,7 +6,7 @@ import { filter } from '../common/filter.js';
 import EmptyView from '../view/empty-view.js';
 import { isEscape } from '../common/utils.js';
 import FormEditView from '../view/point/form-edit-view.js';
-import { UserAction, UpdateType } from '../const.js';
+import { UserAction, UpdateType, FilterType } from '../const.js';
 
 export default class BoardPresenter {
   #sortComponent = null;
@@ -18,6 +18,7 @@ export default class BoardPresenter {
   #filterModel = null;
   #pointPresenters = new Map();
   #addFormView = null;
+  #isAddFormOpened = false;
 
   constructor({ filterContainer, contentContainer, pointModel, filterModel }) {
     this.#filterContainer = filterContainer;
@@ -35,7 +36,8 @@ export default class BoardPresenter {
   get points() {
     const allPoints = this.#pointModel.points;
     const currentFilter = this.#filterModel.filter;
-    const filtered = filter[currentFilter](allPoints);
+    const filterFn = filter[currentFilter];
+    const filtered = typeof filterFn === 'function' ? filterFn(allPoints) : allPoints;
 
     switch (this.#currentSortType) {
       case 'price':
@@ -67,12 +69,21 @@ export default class BoardPresenter {
   };
 
   #handleModelEvent = (updateType, data) => {
+    if (this.#isAddFormOpened && (updateType === UpdateType.MINOR || updateType === UpdateType.MAJOR)) {
+      return;
+    }
     switch (updateType) {
       case UpdateType.PATCH:
+
         this.#pointPresenters.get(data.id)?.init(data);
         break;
       case UpdateType.MINOR:
-        this.renderPoints();
+
+        if (data?.id) {
+          this.#pointPresenters.get(data.id)?.init(data);
+        } else {
+          this.renderPoints();
+        }
         break;
       case UpdateType.MAJOR:
         this.resetSort();
@@ -124,7 +135,7 @@ export default class BoardPresenter {
         model: this.#pointModel,
         container: this.#pointList.element,
         onFormOpen: this.#handleFormOpen,
-        onViewAction: this.#handleViewAction,   // <-- теперь единый колбэк
+        onViewAction: this.#handleViewAction,
       });
       pointPresenter.init();
       this.#pointPresenters.set(point.id, pointPresenter);
@@ -160,7 +171,19 @@ export default class BoardPresenter {
   }
 
   #openAddForm() {
-    this.#filterModel.setFilter('everything');
+    if (this.#isAddFormOpened) {
+      return;
+    }
+    this.#isAddFormOpened = true;
+
+    // Закроем старую форму, если вдруг осталась
+    if (this.#addFormView) {
+      this.#closeAddForm();
+    }
+
+    // Меняем фильтр, без перерисовки (MAJOR - MINOR)
+    this.#filterModel.setFilter(UpdateType.MINOR, FilterType.EVERYTHING);
+
     this.#currentSortType = 'day';
     this.#updateSort();
     this.#resetAllForms();
@@ -194,6 +217,7 @@ export default class BoardPresenter {
     });
 
     render(this.#addFormView, this.#pointList.element, 'afterbegin');
+
     document.addEventListener('keydown', this.#onAddFormEscKeydown);
   }
 
@@ -203,6 +227,10 @@ export default class BoardPresenter {
       this.#addFormView = null;
       document.removeEventListener('keydown', this.#onAddFormEscKeydown);
     }
+    this.#isAddFormOpened = false;
+
+    // После закрытия формы обновим список, чтобы применить фильтр
+    this.renderPoints();
   }
 
   createNewPoint() {
