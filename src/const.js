@@ -1,28 +1,50 @@
-export const COUNT_POINT = 6;
-
-export const POINTS_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
-
-export const FilterType = {
+const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
   PRESENT: 'present',
-  PAST: 'past'
+  PAST: 'past',
 };
 
-export const FILTER_NAMES = {
+const SortType = {
+  DAY: 'day',
+  PRICE: 'price',
+  TIME: 'time',
+};
+
+const UserAction = {
+  UPDATE_POINT: 'UPDATE_POINT',
+  ADD_POINT: 'ADD_POINT',
+  DELETE_POINT: 'DELETE_POINT',
+};
+
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+const FILTER_NAMES = {
   [FilterType.EVERYTHING]: 'Everything',
   [FilterType.FUTURE]: 'Future',
   [FilterType.PRESENT]: 'Present',
-  [FilterType.PAST]: 'Past'
+  [FilterType.PAST]: 'Past',
 };
 
-export const Mode = {
+const Mode = {
   DEFAULT: 'DEFAULT',
   EDITING: 'EDITING',
 };
 
-export const SortType = {
-  DEFAULT: 'default',
-  PRICE: 'price',
-  TIME: 'time',
-};
+const POINTS_TYPES = [
+  'taxi',
+  'bus',
+  'train',
+  'ship',
+  'drive',
+  'flight',
+  'check-in',
+  'sightseeing',
+  'restaurant',
+];
+
+export { FilterType, SortType, UserAction, UpdateType, FILTER_NAMES, Mode, POINTS_TYPES };

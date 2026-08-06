@@ -13,7 +13,7 @@ const presenter = new BoardPresenter({
   filterContainer,
   contentContainer,
   pointModel,
-  filterModel
+  filterModel,
 });
 presenter.init();
 
@@ -21,11 +21,6 @@ const filterPresenter = new FilterPresenter({
   filterContainer,
   filterModel,
   pointModel,
-  onFilterChange: () => {
-    // Вызываем перерисовку точек при смене фильтра
-    presenter.resetSort();
-    presenter.renderPoints();
-  }
 });
 filterPresenter.init();
 

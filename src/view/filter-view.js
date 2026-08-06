@@ -5,7 +5,6 @@ function createFilterTemplate(filters, currentFilterType) {
     .map((filter) => {
       const isChecked = filter.type === currentFilterType;
       const isDisabled = filter.count === 0;
-
       return `
       <div class="trip-filters__filter">
         <input id="filter-${filter.type}"
@@ -25,6 +24,7 @@ function createFilterTemplate(filters, currentFilterType) {
 
   return `<form class="trip-filters">${filterItems}</form>`;
 }
+
 export default class FilterView extends AbstractView {
   #filters = [];
   #currentFilterType = null;
@@ -35,25 +35,17 @@ export default class FilterView extends AbstractView {
     this.#filters = filters;
     this.#currentFilterType = currentFilterType;
     this.#onFilterChange = onFilterChange;
+    this.element.addEventListener('change', this.#handleFilterChange);
   }
 
   #handleFilterChange = (evt) => {
-    if (evt.target.tagName !== 'INPUT') {
+    if (evt.target.tagName !== 'INPUT' || evt.target.type !== 'radio') {
       return;
     }
     this.#onFilterChange(evt.target.value);
   };
 
-  setFilterChangeHandler() {
-    this.element.querySelectorAll('.trip-filters__filter-input')
-      .forEach((input) => {
-        input.addEventListener('change', this.#handleFilterChange);
-      });
-  }
-
   get template() {
     return createFilterTemplate(this.#filters, this.#currentFilterType);
   }
 }
-
-

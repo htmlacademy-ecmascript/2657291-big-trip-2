@@ -1,11 +1,11 @@
 import { mockRoutePoint } from '../mock/points';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import {nanoid} from 'nanoid';
+import { nanoid } from 'nanoid';
 
 dayjs.extend(duration);
 
-export const isEscape = ({key}) => key === 'Escape';
+export const isEscape = ({ key }) => key === 'Escape';
 
 const DATE_FORMAT = 'D MMMM';
 
@@ -50,13 +50,10 @@ export function getDuration(dateFrom, dateTo) {
   const pad = (num) => String(num).padStart(2, '0');
 
   if (days === 0 && hours === 0) {
-    // Менее часа - только минуты (без нуля)
     return `${minutes}M`;
   } else if (days === 0) {
-    // Менее суток - часы и минуты с нулём
     return `${pad(hours)}H ${pad(minutes)}M`;
   } else {
-    // Более суток - дни, часы, минуты с нулём
     return `${pad(days)}D ${pad(hours)}H ${pad(minutes)}M`;
   }
 }
@@ -84,6 +81,12 @@ export function getRandomPoint() {
   };
 }
 
-export function updateItem(items, update) {
-  return items.map((item) => item.id === update.id ? update : item);
+export function isDatesEqual(dateA, dateB) {
+  if (dateA === null && dateB === null) {
+    return true;
+  }
+  if (dateA === null || dateB === null) {
+    return false;
+  }
+  return dayjs(dateA).isSame(dayjs(dateB), 'day');
 }
