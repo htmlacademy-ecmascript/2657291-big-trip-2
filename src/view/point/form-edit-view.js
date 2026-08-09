@@ -73,7 +73,7 @@ function createTemplate(point, offers, destinationName, destinations, descriptio
               ${safeOffers.map((offer) => `
                 <div class="event__offer-selector">
                   <input class="event__offer-checkbox visually-hidden" id="event-offer-${offer.id}-${uid}" type="checkbox"
-                         name="event-offer-luggage" ${point.offers.includes(offer.id) ? 'checked' : ''}>
+                         name=${offer.id} ${point.offers.includes(offer.id) ? 'checked' : ''}>
                   <label class="event__offer-label" for="event-offer-${offer.id}-${uid}">
                     <span class="event__offer-title">${he.encode(offer.title)}</span>
                     &plus;&euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
@@ -97,7 +97,7 @@ function createTemplate(point, offers, destinationName, destinations, descriptio
 
 export default class FormEditView extends AbstractStatefulView {
   #destinations = null;
-  #pointModel = null;
+  //#pointModel = null;
   #onSave = null;
   #onClose = null;
   #isNew = false;
@@ -106,6 +106,7 @@ export default class FormEditView extends AbstractStatefulView {
   #uid = null;
   #datepickerFrom = null;
   #datepickerTo = null;
+  #allOffers = null;
 
   constructor({
     point,
@@ -114,12 +115,13 @@ export default class FormEditView extends AbstractStatefulView {
     description,
     pictures,
     destinations,
-    pointModel,
+    //pointModel,
     onSave,
     onClose,
     isNew = false,
     onCreate = null,
     onDelete = null,
+    allOffers,
   }) {
     super();
     const safeDestinations = Array.isArray(destinations) ? destinations : [];
@@ -128,12 +130,13 @@ export default class FormEditView extends AbstractStatefulView {
 
     this.#uid = Date.now();
     this.#destinations = safeDestinations;
-    this.#pointModel = pointModel;
+    //this.#pointModel = pointModel;
     this.#onSave = onSave;
     this.#onClose = onClose;
     this.#isNew = isNew;
     this.#onCreate = onCreate;
     this.#onDelete = onDelete;
+    this.#allOffers = allOffers;
 
     this._setState({
       point,
@@ -153,9 +156,12 @@ export default class FormEditView extends AbstractStatefulView {
   _restoreHandlers() {
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handleCloseClick);
     this.element.querySelector('form').addEventListener('submit', this.#handleSave);
-    this.element.querySelectorAll('.event__type-input').forEach((i) => i.addEventListener('change', this.#handleTypeChange));
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#handleTypeChange);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#handleDestinationChange);
+
+
     this.element.querySelectorAll('.event__offer-checkbox').forEach((cb) => cb.addEventListener('change', this.#handleOfferChange));
+
 
     const priceInput = this.element.querySelector('.event__input--price');
     priceInput.addEventListener('input', this.#handlePriceInput);
@@ -265,8 +271,7 @@ export default class FormEditView extends AbstractStatefulView {
   #handleTypeChange = (evt) => {
     const newType = evt.target.value;
     const updatedPoint = { ...this._state.point, type: newType, offers: [] };
-    const newOffers = this.#pointModel.getOffersByType(newType) || [];
-
+    const newOffers = this.#allOffers.find((item) => item.type === newType).offers;
     this.updateElement({
       point: updatedPoint,
       offers: newOffers,
@@ -306,14 +311,19 @@ export default class FormEditView extends AbstractStatefulView {
   }
 
   #handleOfferChange = (evt) => {
-    const offerId = evt.target.id.replace(`-${this.#uid}`, '');
-    const updatedPoint = { ...this._state.point };
-    if (updatedPoint.offers.includes(offerId)) {
-      updatedPoint.offers = updatedPoint.offers.filter((id) => id !== offerId);
+    const offerId = evt.target.name;
+    let currentCheckedOffers = [...this._state.point.offers];
+    if(evt.target.checked) {
+      currentCheckedOffers.push(offerId);
     } else {
-      updatedPoint.offers = [...updatedPoint.offers, offerId];
+      currentCheckedOffers = currentCheckedOffers.filter((item) => item !== offerId);
     }
-    this.updateElement({ point: updatedPoint });
+    this._setState({
+      point: {
+        ...this._state.point,
+        offers: currentCheckedOffers
+      }
+    });
   };
 
   #handleDeleteClick = (evt) => {
