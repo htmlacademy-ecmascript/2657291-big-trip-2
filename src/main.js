@@ -30,3 +30,4 @@ if (newEventButton) {
     presenter.createNewPoint();
   });
 }
+

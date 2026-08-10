@@ -72,7 +72,6 @@ export default class PointPresenter {
       destinations: this.#pointModel.destinations || [],
       description: this.#pointModel.getDestinationByPoint(this.#point)?.description || '',
       pictures: this.#pointModel.getDestinationByPoint(this.#point)?.pictures || [],
-      //pointModel: this.#pointModel,
       allOffers: this.#pointModel.offers,
 
       onSave: (updatedPoint) => {
@@ -99,6 +98,13 @@ export default class PointPresenter {
   }
 
   #openForm() {
+    if (this.#onFormOpen) {
+      const canOpen = this.#onFormOpen(); // проверяем, можно ли открыть
+      if (canOpen === false) {
+        return; // форма новой точки открыта — не открываем редактирование
+      }
+    }
+
     if (this.#onFormOpen) {
       this.#onFormOpen();
     }

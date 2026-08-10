@@ -7,6 +7,7 @@ import EmptyView from '../view/empty-view.js';
 import { isEscape } from '../common/utils.js';
 import FormEditView from '../view/point/form-edit-view.js';
 import { UserAction, UpdateType, FilterType } from '../const.js';
+import NewPointPresenter from './new-point-presenter.js';
 
 export default class BoardPresenter {
   #sortComponent = null;
@@ -19,53 +20,16 @@ export default class BoardPresenter {
   #pointPresenters = new Map();
   #addFormView = null;
   #isAddFormOpened = false;
+  #newPointPresenter = null;
 
-  constructor({ filterContainer, contentContainer, pointModel, filterModel }) {
-    this.#filterContainer = filterContainer;
-    this.#contentContainer = contentContainer;
-    this.#pointModel = pointModel;
-    this.#filterModel = filterModel;
-    this.#pointModel.addObserver(this.#handleModelEvent);
-    this.#filterModel.addObserver(this.#handleModelEvent);
-  }
+  #handleNewPointOpen = () => {
+    this.#resetAllForms();
 
-  init() {
-    this.#renderBoard();
-  }
-
-  get points() {
-    const allPoints = this.#pointModel.points;
-    const currentFilter = this.#filterModel.filter;
-    const filterFn = filter[currentFilter];
-    const filtered = typeof filterFn === 'function' ? filterFn(allPoints) : allPoints;
-
-    switch (this.#currentSortType) {
-      case 'price':
-        return [...filtered].sort((a, b) => b.basePrice - a.basePrice);
-      case 'time':
-        return [...filtered].sort((a, b) => {
-          const durationA = new Date(a.dateTo) - new Date(a.dateFrom);
-          const durationB = new Date(b.dateTo) - new Date(b.dateFrom);
-          return durationB - durationA;
-        });
-      case 'day':
-      default:
-        return filtered;
-    }
-  }
-
-  #handleViewAction = (actionType, updateType, update) => {
-    switch (actionType) {
-      case UserAction.UPDATE_POINT:
-        this.#pointModel.updatePoint(updateType, update);
-        break;
-      case UserAction.ADD_POINT:
-        this.#pointModel.addPoint(updateType, update);
-        break;
-      case UserAction.DELETE_POINT:
-        this.#pointModel.deletePoint(updateType, update.id);
-        break;
-    }
+    // Сбрасываем фильтр на Everything
+    this.#filterModel.setFilter(UpdateType.PATCH, FilterType.EVERYTHING);
+    // Сбрасываем сортировку на Day
+    this.#currentSortType = 'day';
+    this.#updateSort();
   };
 
   #handleModelEvent = (updateType, data) => {
@@ -100,6 +64,75 @@ export default class BoardPresenter {
     this.#updateSort();
     this.renderPoints();
   };
+
+  #handleViewAction = (actionType, updateType, update) => {
+    switch (actionType) {
+      case UserAction.UPDATE_POINT:
+        this.#pointModel.updatePoint(updateType, update);
+        break;
+      case UserAction.ADD_POINT:
+        this.#pointModel.addPoint(updateType, update);
+        break;
+      case UserAction.DELETE_POINT:
+        this.#pointModel.deletePoint(updateType, update.id);
+        break;
+    }
+  };
+
+  #handleFormOpen = () => {
+    if (this.#newPointPresenter.isOpen) {
+      return false;
+    }
+    this.#resetAllForms();
+    return true;
+  };
+
+  #handleNewPointSave = (pointData) => {
+    this.#handleViewAction(UserAction.ADD_POINT, UpdateType.MINOR, pointData);
+  };
+
+  constructor({ filterContainer, contentContainer, pointModel, filterModel }) {
+    this.#filterContainer = filterContainer;
+    this.#contentContainer = contentContainer;
+    this.#pointModel = pointModel;
+    this.#filterModel = filterModel;
+    this.#pointModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
+
+    this.#newPointPresenter = new NewPointPresenter({
+      container: this.#pointList.element,
+      newEventButton: document.querySelector('.trip-main__event-add-btn'),
+      destinations: this.#pointModel.destinations,
+      allOffers: this.#pointModel.offers,
+      onNewPointOpen: this.#handleNewPointOpen,
+      onNewPointSave: this.#handleNewPointSave,
+    });
+  }
+
+  init() {
+    this.#renderBoard();
+  }
+
+  get points() {
+    const allPoints = this.#pointModel.points;
+    const currentFilter = this.#filterModel.filter;
+    const filterFn = filter[currentFilter];
+    const filtered = typeof filterFn === 'function' ? filterFn(allPoints) : allPoints;
+
+    switch (this.#currentSortType) {
+      case 'price':
+        return [...filtered].sort((a, b) => b.basePrice - a.basePrice);
+      case 'time':
+        return [...filtered].sort((a, b) => {
+          const durationA = new Date(a.dateTo) - new Date(a.dateFrom);
+          const durationB = new Date(b.dateTo) - new Date(b.dateFrom);
+          return durationB - durationA;
+        });
+      case 'day':
+      default:
+        return filtered;
+    }
+  }
 
   #renderSort() {
     this.#sortComponent = new SortView({
@@ -147,10 +180,6 @@ export default class BoardPresenter {
     this.#pointPresenters.clear();
   }
 
-  #handleFormOpen = () => {
-    this.#resetAllForms();
-  };
-
   #resetAllForms() {
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
   }
@@ -169,6 +198,13 @@ export default class BoardPresenter {
 
     this.#sortComponent = newSortComponent;
   }
+
+  #onAddFormEscKeydown = (evt) => {
+    if (isEscape(evt)) {
+      evt.preventDefault();
+      this.#closeAddForm();
+    }
+  };
 
   #openAddForm() {
     if (this.#isAddFormOpened) {
@@ -206,7 +242,7 @@ export default class BoardPresenter {
       description: '',
       pictures: [],
       destinations: this.#pointModel.destinations,
-      pointModel: this.#pointModel,
+      allOffers: this.#pointModel.offers,
       onSave: null,
       onClose: () => this.#closeAddForm(),
       isNew: true,
@@ -233,19 +269,16 @@ export default class BoardPresenter {
     this.renderPoints();
   }
 
-  createNewPoint() {
-    this.#openAddForm();
-  }
+  //createNewPoint() {
+  //  this.#openAddForm();
+  //}
 
   resetSort() {
     this.#currentSortType = 'day';
     this.#updateSort();
   }
 
-  #onAddFormEscKeydown = (evt) => {
-    if (isEscape(evt)) {
-      evt.preventDefault();
-      this.#closeAddForm();
-    }
-  };
+  createNewPoint() {
+    this.#newPointPresenter.open();
+  }
 }
