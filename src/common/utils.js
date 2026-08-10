@@ -90,3 +90,7 @@ export function isDatesEqual(dateA, dateB) {
   }
   return dayjs(dateA).isSame(dayjs(dateB), 'day');
 }
+
+export const getDefaultDateFrom = () => new Date().toISOString();
+export const getDefaultDateTo = () => new Date(Date.now() + 3600000)
+  .toISOString();

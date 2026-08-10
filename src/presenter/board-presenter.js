@@ -4,8 +4,6 @@ import PointListView from '../view/point-list-view.js';
 import PointPresenter from './point-presenter.js';
 import { filter } from '../common/filter.js';
 import EmptyView from '../view/empty-view.js';
-import { isEscape } from '../common/utils.js';
-import FormEditView from '../view/point/form-edit-view.js';
 import { UserAction, UpdateType, FilterType } from '../const.js';
 import NewPointPresenter from './new-point-presenter.js';
 
@@ -18,8 +16,6 @@ export default class BoardPresenter {
   #pointModel = null;
   #filterModel = null;
   #pointPresenters = new Map();
-  #addFormView = null;
-  #isAddFormOpened = false;
   #newPointPresenter = null;
 
   #handleNewPointOpen = () => {
@@ -27,24 +23,30 @@ export default class BoardPresenter {
 
     // Сбрасываем фильтр на Everything
     this.#filterModel.setFilter(UpdateType.PATCH, FilterType.EVERYTHING);
+
     // Сбрасываем сортировку на Day
     this.#currentSortType = 'day';
     this.#updateSort();
   };
 
+  #handleNewPointSave = (pointData) => {
+    // Добавляем новую точку
+    this.#handleViewAction(UserAction.ADD_POINT, UpdateType.MINOR, pointData);
+  };
+
   #handleModelEvent = (updateType, data) => {
-    if (this.#isAddFormOpened && (updateType === UpdateType.MINOR || updateType === UpdateType.MAJOR)) {
-      return;
-    }
     switch (updateType) {
       case UpdateType.PATCH:
-
         this.#pointPresenters.get(data.id)?.init(data);
         break;
       case UpdateType.MINOR:
-
         if (data?.id) {
-          this.#pointPresenters.get(data.id)?.init(data);
+          const presenter = this.#pointPresenters.get(data.id);
+          if (presenter) {
+            presenter.init(data);
+          } else {
+            this.renderPoints();
+          }
         } else {
           this.renderPoints();
         }
@@ -85,10 +87,6 @@ export default class BoardPresenter {
     }
     this.#resetAllForms();
     return true;
-  };
-
-  #handleNewPointSave = (pointData) => {
-    this.#handleViewAction(UserAction.ADD_POINT, UpdateType.MINOR, pointData);
   };
 
   constructor({ filterContainer, contentContainer, pointModel, filterModel }) {
@@ -198,80 +196,6 @@ export default class BoardPresenter {
 
     this.#sortComponent = newSortComponent;
   }
-
-  #onAddFormEscKeydown = (evt) => {
-    if (isEscape(evt)) {
-      evt.preventDefault();
-      this.#closeAddForm();
-    }
-  };
-
-  #openAddForm() {
-    if (this.#isAddFormOpened) {
-      return;
-    }
-    this.#isAddFormOpened = true;
-
-    // Закроем старую форму, если вдруг осталась
-    if (this.#addFormView) {
-      this.#closeAddForm();
-    }
-
-    // Меняем фильтр, без перерисовки (MAJOR - MINOR)
-    this.#filterModel.setFilter(UpdateType.MINOR, FilterType.EVERYTHING);
-
-    this.#currentSortType = 'day';
-    this.#updateSort();
-    this.#resetAllForms();
-
-    const blankPoint = {
-      id: crypto.randomUUID(),
-      type: 'flight',
-      basePrice: 0,
-      dateFrom: new Date().toISOString(),
-      dateTo: new Date().toISOString(),
-      destination: '',
-      offers: [],
-      isFavorite: false,
-    };
-
-    this.#addFormView = new FormEditView({
-      point: blankPoint,
-      offers: [],
-      destinationName: '',
-      description: '',
-      pictures: [],
-      destinations: this.#pointModel.destinations,
-      allOffers: this.#pointModel.offers,
-      onSave: null,
-      onClose: () => this.#closeAddForm(),
-      isNew: true,
-      onCreate: (newPoint) => {
-        this.#handleViewAction(UserAction.ADD_POINT, UpdateType.MINOR, newPoint);
-        this.#closeAddForm();
-      },
-    });
-
-    render(this.#addFormView, this.#pointList.element, 'afterbegin');
-
-    document.addEventListener('keydown', this.#onAddFormEscKeydown);
-  }
-
-  #closeAddForm() {
-    if (this.#addFormView) {
-      this.#addFormView.removeElement();
-      this.#addFormView = null;
-      document.removeEventListener('keydown', this.#onAddFormEscKeydown);
-    }
-    this.#isAddFormOpened = false;
-
-    // После закрытия формы обновим список, чтобы применить фильтр
-    this.renderPoints();
-  }
-
-  //createNewPoint() {
-  //  this.#openAddForm();
-  //}
 
   resetSort() {
     this.#currentSortType = 'day';

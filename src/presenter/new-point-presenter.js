@@ -1,6 +1,6 @@
 import { render } from '../framework/render.js';
 import { isEscape } from '../common/utils.js';
-import FormEditView from '../view/point/form-edit-view.js';
+import NewPointView from '../view/point/new-point-view.js';
 
 export default class NewPointPresenter {
   #container = null;
@@ -31,49 +31,32 @@ export default class NewPointPresenter {
 
     this.#onNewPointOpen();
 
-    const defaultPoint = {
-      id: crypto.randomUUID(),
-      type: 'flight',
-      basePrice: 0,
-      dateFrom: new Date().toISOString(),
-      dateTo: new Date().toISOString(),
-      destination: '',
-      offers: [],
-      isFavorite: false,
-    };
-
-    this.#formView = new FormEditView({
-      point: defaultPoint,
-      offers: [],
-      destinationName: '',
-      description: '',
-      pictures: [],
+    this.#formView = new NewPointView({
       destinations: this.#destinations,
       allOffers: this.#allOffers,
-      onSave: (pointData) => this.#handleSave(pointData),
-      onClose: () => this.#closeForm(),
-      isNew: true,
-      onCreate: (pointData) => {
-        this.#handleSave(pointData);
-      },
+      onSave: this.#handleSave,
+      onClose: this.#handleClose,
     });
 
     render(this.#formView, this.#container, 'afterbegin');
-
+    this.#formView._restoreHandlers();
     document.addEventListener('keydown', this.#onEscKeydown);
   }
 
-
   #closeForm() {
     if (this.#formView) {
-      this.#formView.element.remove();
+      if (this.#formView.element) {
+        this.#formView.element.remove();
+      }
+      this.#formView.removeElement();
       this.#formView = null;
-      document.removeEventListener('keydown', this.#onEscKeydown);
     }
 
     if (this.#newEventButton) {
       this.#newEventButton.disabled = false;
     }
+
+    document.removeEventListener('keydown', this.#onEscKeydown);
   }
 
   #onEscKeydown = (evt) => {
@@ -87,8 +70,12 @@ export default class NewPointPresenter {
     return this.#formView !== null;
   }
 
-  #handleSave(pointData) {
-    this.#closeForm();
+  #handleSave = (pointData) => {
     this.#onNewPointSave(pointData);
-  }
+    this.#closeForm();
+  };
+
+  #handleClose = () => {
+    this.#closeForm();
+  };
 }

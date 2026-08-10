@@ -73,7 +73,7 @@ function createTemplate(point, offers, destinationName, destinations, descriptio
               ${safeOffers.map((offer) => `
                 <div class="event__offer-selector">
                   <input class="event__offer-checkbox visually-hidden" id="event-offer-${offer.id}-${uid}" type="checkbox"
-                         name=${offer.id} ${point.offers.includes(offer.id) ? 'checked' : ''}>
+                         name="${offer.id}" ${point.offers.includes(offer.id) ? 'checked' : ''}>
                   <label class="event__offer-label" for="event-offer-${offer.id}-${uid}">
                     <span class="event__offer-title">${he.encode(offer.title)}</span>
                     &plus;&euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
@@ -99,7 +99,6 @@ export default class FormEditView extends AbstractStatefulView {
   #destinations = null;
   #onSave = null;
   #onClose = null;
-  #isNew = false;
   #onCreate = null;
   #onDelete = null;
   #uid = null;
@@ -109,55 +108,53 @@ export default class FormEditView extends AbstractStatefulView {
 
   constructor({
     point,
-    offers,
-    destinationName,
-    description,
-    pictures,
     destinations,
+    allOffers,
     onSave,
     onClose,
     isNew = false,
     onCreate = null,
     onDelete = null,
-    allOffers,
   }) {
     super();
     const safeDestinations = Array.isArray(destinations) ? destinations : [];
-    const safeOffers = Array.isArray(offers) ? offers : [];
-    const safePictures = Array.isArray(pictures) ? pictures : [];
 
     this.#uid = Date.now();
     this.#destinations = safeDestinations;
     this.#onSave = onSave;
     this.#onClose = onClose;
-    this.#isNew = isNew;
     this.#onCreate = onCreate;
     this.#onDelete = onDelete;
     this.#allOffers = allOffers;
 
-    const { id, type, destination, dateFrom, dateTo, basePrice, offers: pointOffers } = point;
+    // Находим destination по ID из point
+    const destination = safeDestinations.find((item) => item.id === point.destination);
 
-    const currentDestination = safeDestinations.find((item) => item.name === destinationName) || {
+    const currentDestination = destination || {
       id: '',
-      name: destinationName || '',
-      description: description || '',
-      pictures: safePictures || [],
+      name: '',
+      description: '',
+      pictures: [],
     };
 
+    // Находим офферы для типа
+    const foundOffers = this.#allOffers?.find((item) => item.type === point.type);
+    const availableOffers = foundOffers?.offers || [];
+
     this._setState({
-      point: { id, type, destination, dateFrom, dateTo, basePrice, offers: pointOffers },
+      point: { ...point },
       currentDestination: {
         id: currentDestination.id,
         name: currentDestination.name,
         description: currentDestination.description,
         pictures: currentDestination.pictures,
       },
-      availableOffers: safeOffers.map((offer) => ({
+      availableOffers: availableOffers.map((offer) => ({
         id: offer.id,
         title: offer.title,
         price: offer.price,
       })),
-      isNew: this.#isNew,
+      isNew: isNew,
     });
   }
 
@@ -292,7 +289,10 @@ export default class FormEditView extends AbstractStatefulView {
   #handleTypeChange = (evt) => {
     const newType = evt.target.value;
     const updatedPoint = { ...this._state.point, type: newType, offers: [] };
-    const newOffers = this.#allOffers.find((item) => item.type === newType).offers;
+
+    const foundOffers = this.#allOffers?.find((item) => item.type === newType);
+    const newOffers = foundOffers?.offers || [];
+
     this.updateElement({
       point: updatedPoint,
       availableOffers: newOffers,
@@ -340,7 +340,7 @@ export default class FormEditView extends AbstractStatefulView {
     } else {
       currentCheckedOffers = currentCheckedOffers.filter((item) => item !== offerId);
     }
-    this._setState({
+    this.updateElement({
       point: {
         ...this._state.point,
         offers: currentCheckedOffers

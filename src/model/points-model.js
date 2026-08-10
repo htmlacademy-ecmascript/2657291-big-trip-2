@@ -2,6 +2,7 @@ import Observable from '../framework/observable.js';
 import { mockDestination } from '../mock/destination';
 import { mockOffers } from '../mock/offers';
 import { mockRoutePoint } from '../mock/points';
+import { nanoid } from 'nanoid';
 
 export default class PointModel extends Observable {
   #points = mockRoutePoint;
@@ -54,11 +55,12 @@ export default class PointModel extends Observable {
     this._notify(updateType, updatedPoint);
   }
 
-  addPoint(updateType, newPoint) {
-    this.#points = [
-      newPoint,
-      ...this.#points,
-    ];
+  addPoint(updateType, point) {
+    const newPoint = {
+      ...point,
+      id: nanoid(), //Генерируем ID только если его нет
+    };
+    this.#points = [newPoint, ...this.#points];
     this._notify(updateType, newPoint);
   }
 
