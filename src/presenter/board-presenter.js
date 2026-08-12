@@ -52,6 +52,7 @@ export default class BoardPresenter {
         }
         break;
       case UpdateType.MAJOR:
+        this.#newPointPresenter.close();
         this.resetSort();
         this.renderPoints();
         break;

@@ -78,4 +78,8 @@ export default class NewPointPresenter {
   #handleClose = () => {
     this.#closeForm();
   };
+
+  close() {
+    this.#closeForm();
+  }
 }
