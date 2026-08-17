@@ -1,23 +1,24 @@
 import PointView from '../view/point/point-view.js';
 import FormEditView from '../view/point/form-edit-view.js';
 import { render, replace } from '../framework/render.js';
-import {isEscape} from '../common/utils.js';
-import { Mode } from '../const.js';
-export default class PointPresenter{
+import { isEscape, isDatesEqual } from '../common/utils.js';
+import { Mode, UserAction, UpdateType } from '../const.js';
+
+export default class PointPresenter {
   #point = null;
   #pointModel = null;
   #container = null;
-  #onPointChange = null;
+  #onViewAction = null;
   #onFormOpen = null;
   #pointView = null;
   #formView = null;
   #mode = Mode.DEFAULT;
 
-  constructor({point, model, container, onPointChange, onFormOpen}) {
+  constructor({ point, model, container, onViewAction, onFormOpen }) {
     this.#point = point;
     this.#pointModel = model;
     this.#container = container;
-    this.#onPointChange = onPointChange;
+    this.#onViewAction = onViewAction;
     this.#onFormOpen = onFormOpen;
   }
 
@@ -29,15 +30,12 @@ export default class PointPresenter{
     const oldPointView = this.#pointView;
     const oldFormView = this.#formView;
 
-    // Создаём новые вьюхи с обновлёнными данными
     this.#createViews();
 
-    // Если была открыта форма — закрываем её
     if (this.#mode === Mode.EDITING) {
       this.#closeForm();
     }
 
-    // Заменяем старую точку новой на том же месте
     if (oldPointView?.element?.parentElement) {
       replace(this.#pointView, oldPointView);
       oldPointView.removeElement();
@@ -45,7 +43,6 @@ export default class PointPresenter{
       render(this.#pointView, this.#container);
     }
 
-    // Удаляем старую форму, если она была в DOM
     if (oldFormView?.element?.parentElement) {
       oldFormView.removeElement();
     }
@@ -54,77 +51,85 @@ export default class PointPresenter{
   #createViews() {
     this.#pointView = new PointView({
       pointData: this.#point,
-      onEditClick: () => {
-        this.#openForm();
-      },
+      onEditClick: () => this.#openForm(),
       offers: this.#pointModel.getOffersByPoint(this.#point),
-      destinationName:  this.#pointModel.getDestinationByPoint(this.#point).name,
+      destinationName: this.#pointModel.getDestinationByPoint(this.#point)?.name || '',
       onFavoriteClick: () => {
-        const updatedPoint = {
-          ...this.#point,
-          isFavorite: !this.#point.isFavorite
-        };
-        this.#onPointChange(updatedPoint);
+        this.#onViewAction(
+          UserAction.UPDATE_POINT,
+          UpdateType.MINOR,
+          { ...this.#point, isFavorite: !this.#point.isFavorite }
+        );
       }
     });
+
+    const offersForForm = this.#pointModel.getOffersByType(this.#point) || [];
 
     this.#formView = new FormEditView({
       point: this.#point,
-      offers: this.#pointModel.getOffersByType(this.#point)?.offers || [],
+      offers: offersForForm,
       destinationName: this.#pointModel.getDestinationByPoint(this.#point)?.name || '',
-      destinations: this.#pointModel.destinations,
+      destinations: this.#pointModel.destinations || [],
       description: this.#pointModel.getDestinationByPoint(this.#point)?.description || '',
       pictures: this.#pointModel.getDestinationByPoint(this.#point)?.pictures || [],
-      pointModel: this.#pointModel,
+      allOffers: this.#pointModel.offers,
 
       onSave: (updatedPoint) => {
         this.#closeForm();
-        this.#onPointChange(updatedPoint);
 
+        const isMinorUpdate =
+        !isDatesEqual(this.#point.dateFrom, updatedPoint.dateFrom) ||
+        !isDatesEqual(this.#point.dateTo, updatedPoint.dateTo) ||
+        this.#point.destination !== updatedPoint.destination;
+
+        this.#onViewAction(
+          UserAction.UPDATE_POINT,
+          isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+          updatedPoint,
+        );
       },
-      onClose: () => {
-        this.#closeForm();
-      }
-    });
-  }
 
-  #renderPoint() {
-    render(this.#pointView, this.#container);
+      onClose: () => this.#closeForm(),
+
+      onDelete: () => {
+        this.#onViewAction(UserAction.DELETE_POINT, UpdateType.MINOR, { id: this.#point.id });
+      },
+    });
   }
 
   #openForm() {
     if (this.#onFormOpen) {
+      const canOpen = this.#onFormOpen(); // проверяем, можно ли открыть
+      if (canOpen === false) {
+        return; // форма новой точки открыта — не открываем редактирование
+      }
+    }
+
+    if (this.#onFormOpen) {
       this.#onFormOpen();
     }
 
-    replace(this.#formView, this.#pointView);
+    if (this.#pointView?.element?.parentElement) {
+      replace(this.#formView, this.#pointView);
+    } else {
+      render(this.#formView, this.#container);
+    }
 
+    this.#formView._restoreHandlers();
     this.#mode = Mode.EDITING;
-
     document.addEventListener('keydown', this.#onDocumentKeydown);
   }
 
-
   #closeForm() {
-    replace(this.#pointView, this.#formView);
+    if (this.#formView?.element?.parentElement) {
+      replace(this.#pointView, this.#formView);
+    } else {
+      render(this.#pointView, this.#container);
+    }
+
     this.#mode = Mode.DEFAULT;
     document.removeEventListener('keydown', this.#onDocumentKeydown);
   }
-
-  #onDocumentKeydown = (evt) => {
-    if (isEscape(evt)){
-      this.#closeForm();
-      document.removeEventListener('keydown', this.#onDocumentKeydown);
-    }
-  };
-
-  #recreateViews() {
-    this.#pointView.element?.remove();
-    this.#formView.element?.remove();
-
-    this.#createViews();
-  }
-
 
   resetView() {
     if (this.#mode === Mode.EDITING) {
@@ -133,8 +138,15 @@ export default class PointPresenter{
   }
 
   destroy() {
-    this.#pointView.element?.remove();
-    this.#formView.element?.remove();
+    this.#pointView?.element?.remove();
+    this.#formView?.element?.remove();
     document.removeEventListener('keydown', this.#onDocumentKeydown);
   }
+
+  #onDocumentKeydown = (evt) => {
+    if (isEscape(evt)) {
+      evt.preventDefault();
+      this.#closeForm();
+    }
+  };
 }

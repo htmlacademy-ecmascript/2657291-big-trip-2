@@ -1,8 +1,10 @@
+import Observable from '../framework/observable.js';
 import { mockDestination } from '../mock/destination';
 import { mockOffers } from '../mock/offers';
 import { mockRoutePoint } from '../mock/points';
+import { nanoid } from 'nanoid';
 
-export default class PointModel {
+export default class PointModel extends Observable {
   #points = mockRoutePoint;
   #offers = mockOffers;
   #destinations = mockDestination;
@@ -11,7 +13,7 @@ export default class PointModel {
     return this.#points;
   }
 
-  get getOffersByPointffers() {
+  get offers() {
     return this.#offers;
   }
 
@@ -38,5 +40,39 @@ export default class PointModel {
 
   isChecked(point, offerId) {
     return point.offers.includes(offerId);
+  }
+
+  updatePoint(updateType, updatedPoint) {
+    const index = this.#points.findIndex((point) => point.id === updatedPoint.id);
+    if (index === -1) {
+      throw new Error('Can\'t update unexisting point');
+    }
+    this.#points = [
+      ...this.#points.slice(0, index),
+      updatedPoint,
+      ...this.#points.slice(index + 1),
+    ];
+    this._notify(updateType, updatedPoint);
+  }
+
+  addPoint(updateType, point) {
+    const newPoint = {
+      ...point,
+      id: nanoid(), //Генерируем ID только если его нет
+    };
+    this.#points = [newPoint, ...this.#points];
+    this._notify(updateType, newPoint);
+  }
+
+  deletePoint(updateType, id) {
+    const index = this.#points.findIndex((point) => point.id === id);
+    if (index === -1) {
+      throw new Error('Can\'t delete unexisting point');
+    }
+    this.#points = [
+      ...this.#points.slice(0, index),
+      ...this.#points.slice(index + 1),
+    ];
+    this._notify(updateType, id);
   }
 }

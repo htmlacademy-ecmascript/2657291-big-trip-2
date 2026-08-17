@@ -1,17 +1,18 @@
+import he from 'he';
 import AbstractView from '../../framework/view/abstract-view.js';
 import { formatDate, getDuration } from '../../common/utils.js';
 
 function createTemplate(pointData, offers, destinationName) {
   const { basePrice, isFavorite, dateFrom, dateTo, type } = pointData;
 
-  return (`
+  return `
     <li class="trip-events__item">
       <div class="event">
         <time class="event__date" datetime="${formatDate(dateFrom, 'full-date')}">${formatDate(dateFrom, 'custom')}</time>
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type.toLowerCase()}.png" alt="Event type icon">
         </div>
-        <h3 class="event__title">${type} ${destinationName || 'unknown'}</h3>
+        <h3 class="event__title">${type} ${he.encode(destinationName || 'unknown')}</h3>
         <div class="event__schedule">
           <p class="event__time">
             <time class="event__start-time" datetime="${formatDate(dateFrom, 'date-time')}">${formatDate(dateFrom, 'time')}</time>
@@ -27,7 +28,7 @@ function createTemplate(pointData, offers, destinationName) {
         <ul class="event__selected-offers">
           ${offers.map((offer) => `
             <li class="event__offer">
-              <span class="event__offer-title">${offer.title}</span>
+              <span class="event__offer-title">${he.encode(offer.title)}</span>
               &plus;&euro;&nbsp;
               <span class="event__offer-price">${offer.price}</span>
             </li>
@@ -44,37 +45,38 @@ function createTemplate(pointData, offers, destinationName) {
         </button>
       </div>
     </li>
-  `);
+  `;
 }
 
 export default class PointView extends AbstractView {
-  #pointModel = null;
   #pointData = null;
   #onEditClick = null;
   #onFavoriteClick = null;
+  #offers = null;
+  #destinationName = null;
 
   constructor({ pointData, offers, destinationName, onEditClick, onFavoriteClick }) {
     super();
     this.#pointData = pointData;
     this.#onEditClick = onEditClick;
     this.#onFavoriteClick = onFavoriteClick;
-    this.offers = offers;
-    this.destinationName = destinationName;
+    this.#offers = offers;
+    this.#destinationName = destinationName;
 
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#openEditForm);
-    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#handleFavoriteClick);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
   }
 
   get template() {
-    return createTemplate(this.#pointData, this.offers, this.destinationName);
+    return createTemplate(this.#pointData, this.#offers, this.#destinationName);
   }
 
-  #openEditForm = (evt) => {
+  #editClickHandler = (evt) => {
     evt.preventDefault();
     this.#onEditClick();
   };
 
-  #handleFavoriteClick = (evt) => {
+  #favoriteClickHandler = (evt) => {
     evt.preventDefault();
     this.#onFavoriteClick();
   };
