@@ -1,27 +1,21 @@
 import Observable from '../framework/observable.js';
-import { mockDestination } from '../mock/destination';
-import { mockOffers } from '../mock/offers';
-import { mockRoutePoint } from '../mock/points';
+//import { mockDestination } from '../mock/destination';
+//import { mockOffers } from '../mock/offers';
+//import { mockRoutePoint } from '../mock/points';
 import { nanoid } from 'nanoid';
+import { UpdateType } from '../const.js';
+
 
 export default class PointModel extends Observable {
   #pointsApiService = null;
   //#points = mockRoutePoint;
   #points = []; //добавил для проверки
-  #offers = mockOffers;
-  #destinations = mockDestination;
+  #offers = [];
+  #destinations = [];
 
   constructor({pointsApiService}) {
     super();
     this.#pointsApiService = pointsApiService;
-
-    this.#pointsApiService.points.then((points) => {
-      console.log(points.map(this.#adaptToClient));
-      // Есть проблема: cтруктура объекта похожа, но некоторые ключи называются иначе,
-      // а ещё на сервере используется snake_case, а у нас camelCase.
-      // Можно, конечно, переписать часть нашего клиентского приложения, но зачем?
-      // Есть вариант получше - паттерн "Адаптер"
-    });
   }
 
   get points() {
@@ -64,40 +58,59 @@ export default class PointModel extends Observable {
     } catch(err) {
       this.#points = [];
     }
+
+    this._notify(UpdateType.INIT);
   }
 
-  updatePoint(updateType, updatedPoint) {
+  async updatePoint(updateType, updatedPoint) {
     const index = this.#points.findIndex((point) => point.id === updatedPoint.id);
     if (index === -1) {
       throw new Error('Can\'t update unexisting point');
     }
-    this.#points = [
-      ...this.#points.slice(0, index),
-      updatedPoint,
-      ...this.#points.slice(index + 1),
-    ];
-    this._notify(updateType, updatedPoint);
+
+    try {
+      const response = await this.#pointsApiService.updatePoint(updatedPoint);
+      const adaptedPoint = this.#adaptToClient(response);
+
+      this.#points = [
+        ...this.#points.slice(0, index),
+        adaptedPoint,
+        ...this.#points.slice(index + 1),
+      ];
+      this._notify(updateType, adaptedPoint);
+    } catch(err) {
+      throw new Error('Can\'t update point');
+    }
   }
 
-  addPoint(updateType, point) {
-    const newPoint = {
-      ...point,
-      id: point.id || nanoid(), //Генерируем ID только если его нет
-    };
-    this.#points = [newPoint, ...this.#points];
-    this._notify(updateType, newPoint);
+  async addPoint(updateType, update) {
+    try {
+      const response = await this.#pointsApiService.addTask(update);
+      const newPoint = this.#adaptToClient(response);
+
+      this.#points = [newPoint, ...this.#points];
+      this._notify(updateType, newPoint);
+    } catch(err) {
+      throw new Error('Can\'t add point');
+    }
   }
 
-  deletePoint(updateType, id) {
-    const index = this.#points.findIndex((point) => point.id === id);
+  async deletePoint(updateType, update) {
+    const index = this.#points.findIndex((point) => point.id === update.id);
     if (index === -1) {
       throw new Error('Can\'t delete unexisting point');
     }
-    this.#points = [
-      ...this.#points.slice(0, index),
-      ...this.#points.slice(index + 1),
-    ];
-    this._notify(updateType, id);
+
+    try {
+      await this.#pointsApiService.deleteTask(update);
+      this.#points = [
+        ...this.#points.slice(0, index),
+        ...this.#points.slice(index + 1),
+      ];
+      this._notify(updateType);
+    } catch(err) {
+      throw new Error('Can\'t delete point');
+    }
   }
 
   #adaptToClient(point) {

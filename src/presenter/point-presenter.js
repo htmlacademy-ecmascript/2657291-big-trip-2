@@ -1,7 +1,7 @@
 import PointView from '../view/point/point-view.js';
 import FormEditView from '../view/point/form-edit-view.js';
 import { render, replace } from '../framework/render.js';
-import { isEscape, isDatesEqual } from '../common/utils.js';
+import { isEscape, isDatesEqual, shake } from '../common/utils.js';
 import { Mode, UserAction, UpdateType } from '../const.js';
 
 export default class PointPresenter {
@@ -75,12 +75,10 @@ export default class PointPresenter {
       allOffers: this.#pointModel.offers,
 
       onSave: (updatedPoint) => {
-        this.#closeForm();
-
         const isMinorUpdate =
-        !isDatesEqual(this.#point.dateFrom, updatedPoint.dateFrom) ||
-        !isDatesEqual(this.#point.dateTo, updatedPoint.dateTo) ||
-        this.#point.destination !== updatedPoint.destination;
+      !isDatesEqual(this.#point.dateFrom, updatedPoint.dateFrom) ||
+      !isDatesEqual(this.#point.dateTo, updatedPoint.dateTo) ||
+      this.#point.destination !== updatedPoint.destination;
 
         this.#onViewAction(
           UserAction.UPDATE_POINT,
@@ -92,7 +90,11 @@ export default class PointPresenter {
       onClose: () => this.#closeForm(),
 
       onDelete: () => {
-        this.#onViewAction(UserAction.DELETE_POINT, UpdateType.MINOR, { id: this.#point.id });
+        this.#onViewAction(
+          UserAction.DELETE_POINT,
+          UpdateType.MINOR,
+          { id: this.#point.id },
+        );
       },
     });
   }
@@ -149,4 +151,39 @@ export default class PointPresenter {
       this.#closeForm();
     }
   };
+
+  setSaving() {
+    if (this.#formView) {
+      this.#formView.setSaving();
+    }
+  }
+
+  setDeleting() {
+    if (this.#formView) {
+      this.#formView.setDeleting();
+    }
+  }
+
+  resetForm() {
+    if (this.#formView) {
+      this.#formView.setDefault();
+    }
+  }
+
+  setAborting() {
+    if (this.#mode === Mode.DEFAULT) {
+      shake(this.#pointView.element);
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#formView.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    shake(this.#formView.element, resetFormState);
+  }
 }

@@ -1,5 +1,5 @@
 import { render } from '../framework/render.js';
-import { isEscape } from '../common/utils.js';
+import { isEscape, shake } from '../common/utils.js';
 import NewPointView from '../view/point/new-point-view.js';
 
 export default class NewPointPresenter {
@@ -71,8 +71,8 @@ export default class NewPointPresenter {
   }
 
   #handleSave = (pointData) => {
+    this.setSaving();
     this.#onNewPointSave(pointData);
-    this.#closeForm();
   };
 
   #handleClose = () => {
@@ -81,5 +81,40 @@ export default class NewPointPresenter {
 
   close() {
     this.#closeForm();
+  }
+
+  setSaving() {
+    if (this.#formView) {
+      this.#formView.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  resetForm() {
+    if (this.#formView) {
+      this.#formView.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    }
+  }
+
+  setAborting() {
+    if (!this.#formView) {
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#formView.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    shake(this.#formView.element, resetFormState);
   }
 }

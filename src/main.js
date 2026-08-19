@@ -13,7 +13,6 @@ const contentContainer = document.querySelector('.trip-events');
 const pointModel = new PointModel({
   pointsApiService: new PointsApiService(END_POINT, AUTHORIZATION)
 });
-pointModel.init();
 
 //const pointModel = new PointModel();
 
@@ -41,3 +40,4 @@ if (newEventButton) {
   });
 }
 
+pointModel.init();
