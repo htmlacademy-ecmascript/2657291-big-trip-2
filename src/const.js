@@ -48,4 +48,9 @@ const POINTS_TYPES = [
   'restaurant',
 ];
 
-export { FilterType, SortType, UserAction, UpdateType, FILTER_NAMES, Mode, POINTS_TYPES };
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
+
+export { FilterType, SortType, UserAction, UpdateType, FILTER_NAMES, Mode, POINTS_TYPES, TimeLimit };

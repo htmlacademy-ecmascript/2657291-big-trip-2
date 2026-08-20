@@ -1,6 +1,6 @@
 import PointView from '../view/point/point-view.js';
 import FormEditView from '../view/point/form-edit-view.js';
-import { render, replace } from '../framework/render.js';
+import { render, replace, remove } from '../framework/render.js';
 import { isEscape, isDatesEqual, shake } from '../common/utils.js';
 import { Mode, UserAction, UpdateType } from '../const.js';
 
@@ -30,11 +30,11 @@ export default class PointPresenter {
     const oldPointView = this.#pointView;
     const oldFormView = this.#formView;
 
-    this.#createViews();
-
     if (this.#mode === Mode.EDITING) {
       this.#closeForm();
     }
+
+    this.#createViews();
 
     if (oldPointView?.element?.parentElement) {
       replace(this.#pointView, oldPointView);
@@ -93,9 +93,10 @@ export default class PointPresenter {
         this.#onViewAction(
           UserAction.DELETE_POINT,
           UpdateType.MINOR,
-          { id: this.#point.id },
+          this.#point,
         );
       },
+
     });
   }
 
@@ -105,10 +106,6 @@ export default class PointPresenter {
       if (canOpen === false) {
         return; // форма новой точки открыта — не открываем редактирование
       }
-    }
-
-    if (this.#onFormOpen) {
-      this.#onFormOpen();
     }
 
     if (this.#pointView?.element?.parentElement) {
@@ -140,8 +137,8 @@ export default class PointPresenter {
   }
 
   destroy() {
-    this.#pointView?.element?.remove();
-    this.#formView?.element?.remove();
+    remove(this.#pointView);
+    remove(this.#formView);
     document.removeEventListener('keydown', this.#onDocumentKeydown);
   }
 

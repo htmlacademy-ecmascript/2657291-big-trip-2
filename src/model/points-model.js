@@ -2,7 +2,7 @@ import Observable from '../framework/observable.js';
 //import { mockDestination } from '../mock/destination';
 //import { mockOffers } from '../mock/offers';
 //import { mockRoutePoint } from '../mock/points';
-import { nanoid } from 'nanoid';
+//import { nanoid } from 'nanoid';
 import { UpdateType } from '../const.js';
 
 
@@ -85,7 +85,7 @@ export default class PointModel extends Observable {
 
   async addPoint(updateType, update) {
     try {
-      const response = await this.#pointsApiService.addTask(update);
+      const response = await this.#pointsApiService.addPoint(update);
       const newPoint = this.#adaptToClient(response);
 
       this.#points = [newPoint, ...this.#points];
@@ -102,12 +102,12 @@ export default class PointModel extends Observable {
     }
 
     try {
-      await this.#pointsApiService.deleteTask(update);
+      await this.#pointsApiService.deletePoint(update);
       this.#points = [
         ...this.#points.slice(0, index),
         ...this.#points.slice(index + 1),
       ];
-      this._notify(updateType);
+      this._notify(updateType, update);
     } catch(err) {
       throw new Error('Can\'t delete point');
     }

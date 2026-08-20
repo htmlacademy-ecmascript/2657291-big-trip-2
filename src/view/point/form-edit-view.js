@@ -1,8 +1,8 @@
 import he from 'he';
 import { POINTS_TYPES } from '../../const';
 import AbstractStatefulView from '../../framework/view/abstract-stateful-view.js';
-import { formatDateForInput, shake } from '../../common/utils.js';
-import flatpickr from 'flatpickr';
+import { formatDateForInput } from '../../common/utils.js';
+//import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
 
@@ -99,7 +99,6 @@ function createTemplate(point, offers, destinationName, destinations, descriptio
     </li>`;
 }
 
-
 export default class FormEditView extends AbstractStatefulView {
   #destinations = null;
   #onSave = null;
@@ -132,7 +131,6 @@ export default class FormEditView extends AbstractStatefulView {
     this.#onDelete = onDelete;
     this.#allOffers = allOffers;
 
-    // Находим destination по ID из point
     const destination = safeDestinations.find((item) => item.id === point.destination);
 
     const currentDestination = destination || {
@@ -142,7 +140,6 @@ export default class FormEditView extends AbstractStatefulView {
       pictures: [],
     };
 
-    // Находим офферы для типа
     const foundOffers = this.#allOffers?.find((item) => item.type === point.type);
     const availableOffers = foundOffers?.offers || [];
 
@@ -170,9 +167,9 @@ export default class FormEditView extends AbstractStatefulView {
     const { point, currentDestination, availableOffers, isDisabled, isSaving, isDeleting } = this._state;
     return createTemplate(
       point,
-      availableOffers, // [ { id, title, price } ]
-      currentDestination.name, // "Amsterdam"
-      this.#destinations, // все города
+      availableOffers,
+      currentDestination.name,
+      this.#destinations,
       currentDestination.description,
       currentDestination.pictures,
       this._state.isNew,
@@ -184,189 +181,36 @@ export default class FormEditView extends AbstractStatefulView {
   }
 
   _restoreHandlers() {
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handleCloseClick);
-    this.element.querySelector('form').addEventListener('submit', this.#handleSave);
-    this.element.querySelector('.event__type-group').addEventListener('change', this.#handleTypeChange);
-    this.element.querySelector('.event__input--destination').addEventListener('change', this.#handleDestinationChange);
+    this.element.querySelector('.event__reset-btn')
+      ?.addEventListener('click', this.#formDeleteClickHandler);
 
-    /* ------ ИСПРАВИТЬ!!! ---*/
-    this.element.querySelectorAll('.event__offer-checkbox').forEach((item) => item.addEventListener('change', this.#handleOfferChange));
+    this.element.querySelector('form')
+      ?.addEventListener('submit', this.#formSubmitHandler);
 
-    const priceInput = this.element.querySelector('.event__input--price');
-    priceInput.addEventListener('input', this.#handlePriceInput);
-    priceInput.addEventListener('change', this.#handlePriceChange);
-
-    const deleteBtn = this.element.querySelector('.event__reset-btn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', this.#handleDeleteClick);
-    }
-
-    if (!this.#datepickerFrom && !this.#datepickerTo) {
-      this.#createDatepickers();
-    }
+    this.element.querySelector('.event__rollup-btn')
+      ?.addEventListener('click', this.#formCloseClickHandler);
   }
 
-  #createDatepickers() {
-    const startTimeInput = this.element.querySelector('input[name="event-start-time"]');
-    const endTimeInput = this.element.querySelector('input[name="event-end-time"]');
-
-    if (startTimeInput) {
-      this.#datepickerFrom = flatpickr(startTimeInput, {
-        enableTime: true,
-        dateFormat: 'd/m/y H:i',
-        defaultDate: this._state.point.dateFrom,
-        onChange: (selectedDates) => {
-          if (selectedDates.length) {
-            const newDate = selectedDates[0].toISOString();
-            if (newDate !== this._state.point.dateFrom) {
-              const updatedPoint = { ...this._state.point, dateFrom: newDate };
-              this.updateElement({ point: updatedPoint });
-            }
-          }
-        }
-      });
-    }
-
-    if (endTimeInput) {
-      this.#datepickerTo = flatpickr(endTimeInput, {
-        enableTime: true,
-        dateFormat: 'd/m/y H:i',
-        defaultDate: this._state.point.dateTo,
-        onChange: (selectedDates) => {
-          if (selectedDates.length) {
-            const newDate = selectedDates[0].toISOString();
-            if (newDate !== this._state.point.dateTo) {
-              const updatedPoint = { ...this._state.point, dateTo: newDate };
-              this.updateElement({ point: updatedPoint });
-            }
-          }
-        }
-      });
-    }
-  }
-
-  removeElement() {
-    if (this.#datepickerFrom) {
-      this.#datepickerFrom.destroy();
-      this.#datepickerFrom = null;
-    }
-    if (this.#datepickerTo) {
-      this.#datepickerTo.destroy();
-      this.#datepickerTo = null;
-    }
-    const deleteBtn = this.element?.querySelector('.event__reset-btn');
-    if (deleteBtn) {
-      deleteBtn.removeEventListener('click', this.#handleDeleteClick);
-    }
-    super.removeElement();
-  }
-
-  #handleSave = (evt) => {
+  #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    const pointData = this._getPointData();
-
-    this.setSaving();
-
-    if (this._state.isNew) {
-      this.#onCreate(pointData);
-    } else {
-      this.#onSave(pointData);
-    }
+    this.#onSave(this._state.point);
   };
 
-  #handleCloseClick = (evt) => {
+  #formCloseClickHandler = (evt) => {
     evt.preventDefault();
     this.#onClose();
   };
 
-  #handlePriceInput = (evt) => {
-    const input = evt.target;
-    let filtered = input.value.replace(/[^\d.]/g, '');
-    const parts = filtered.split('.');
-    if (parts.length > 2) {
-      filtered = `${parts[0]}.${parts.slice(1).join('')}`;
-    }
-    input.value = filtered;
-  };
-
-  #handlePriceChange = (evt) => {
-    const value = parseFloat(evt.target.value);
-    if (!isNaN(value)) {
-      const updatedPoint = { ...this._state.point, basePrice: value };
-      this.updateElement({ point: updatedPoint });
-    } else {
-      evt.target.value = '0';
-      this.updateElement({ point: { ...this._state.point, basePrice: 0 } });
-    }
-  };
-
-  #handleTypeChange = (evt) => {
-    const newType = evt.target.value;
-    const updatedPoint = { ...this._state.point, type: newType, offers: [] };
-
-    const foundOffers = this.#allOffers?.find((item) => item.type === newType);
-    const newOffers = foundOffers?.offers || [];
-
-    this.updateElement({
-      point: updatedPoint,
-      availableOffers: newOffers,
-    });
-  };
-
-  #handleDestinationChange = (evt) => {
-    const name = evt.target.value;
-    const destination = this.#destinations.find((item) => item.name === name);
-    if (destination) {
-      this.updateElement({
-        currentDestination: {
-          id: destination.id,
-          name: destination.name,
-          description: destination.description,
-          pictures: destination.pictures,
-        }
-      });
-    }
-  };
-
-  _getPointData() {
-    const { point, availableOffers, currentDestination } = this._state;
-    const selectedOffers = availableOffers
-      .filter((offer) => point.offers.includes(offer.id))
-      .map((offer) => offer.id);
-
-    return {
-      id: point.id,
-      type: point.type,
-      destination: currentDestination.id || point.destination,
-      dateFrom: point.dateFrom,
-      dateTo: point.dateTo,
-      basePrice: point.basePrice,
-      offers: selectedOffers,
-      isFavorite: point.isFavorite,
-    };
-  }
-
-  #handleOfferChange = (evt) => {
-    const offerId = evt.target.name;
-    let currentCheckedOffers = [...this._state.point.offers];
-    if(evt.target.checked) {
-      currentCheckedOffers.push(offerId);
-    } else {
-      currentCheckedOffers = currentCheckedOffers.filter((item) => item !== offerId);
-    }
-    this.updateElement({
-      point: {
-        ...this._state.point,
-        offers: currentCheckedOffers
-      }
-    });
-  };
-
-  #handleDeleteClick = (evt) => {
+  #formDeleteClickHandler = (evt) => {
     evt.preventDefault();
-    this.setDeleting();
-    if (this.#onDelete) {
-      this.#onDelete();
+
+    if (this._state.isNew) {
+      this.#onClose();
+    } else {
+      this.setDeleting();
+      if (this.#onDelete) {
+        this.#onDelete();
+      }
     }
   };
 
@@ -374,35 +218,13 @@ export default class FormEditView extends AbstractStatefulView {
     this.updateElement({
       isDisabled: true,
       isSaving: true,
-      isDeleting: false,
     });
   }
 
   setDeleting() {
     this.updateElement({
       isDisabled: true,
-      isSaving: false,
       isDeleting: true,
     });
-  }
-
-  setDefault() {
-    this.updateElement({
-      isDisabled: false,
-      isSaving: false,
-      isDeleting: false,
-    });
-  }
-
-  setAborting() {
-    const resetFormState = () => {
-      this.updateElement({
-        isDisabled: false,
-        isSaving: false,
-        isDeleting: false,
-      });
-    };
-
-    shake(this.element, resetFormState);
   }
 }

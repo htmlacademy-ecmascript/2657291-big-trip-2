@@ -27,10 +27,12 @@ export default class PointsApiService extends ApiService {
   }
 
   async addPoint(point) {
+    const adapted = this.#adaptToServer(point);
+
     const response = await this._load({
       url: 'points',
       method: Method.POST,
-      body: JSON.stringify(this.#adaptToServer(point)),
+      body: JSON.stringify(adapted),
       headers: new Headers({'Content-Type': 'application/json'}),
     });
 
@@ -39,7 +41,8 @@ export default class PointsApiService extends ApiService {
     return parsedResponse;
   }
 
-  async deleteTask(point) {
+
+  async deletePoint(point) {
     const response = await this._load({
       url: `points/${point.id}`,
       method: Method.DELETE,
@@ -49,11 +52,12 @@ export default class PointsApiService extends ApiService {
   }
 
   #adaptToServer(point) {
-    const adaptedPoint = {...point,
-      'base_price': point.basePrice,
-      'date_from': point.dateFrom instanceof Date ? point.dateFrom.toISOString() : null,
-      'date_to': point.dateTo instanceof Date ? point.dateTo.toISOString() : null,
-      'is_favorite': point.isFavorite,
+    const adaptedPoint = {
+      ...point,
+      'base_price': Number(point.basePrice),
+      'date_from': point.dateFrom ? new Date(point.dateFrom).toISOString() : null,
+      'date_to': point.dateTo ? new Date(point.dateTo).toISOString() : null,
+      'is_favorite': point.isFavorite ?? false,
     };
 
     delete adaptedPoint.basePrice;
@@ -63,4 +67,5 @@ export default class PointsApiService extends ApiService {
 
     return adaptedPoint;
   }
+
 }

@@ -33,11 +33,11 @@ const filterPresenter = new FilterPresenter({
 });
 filterPresenter.init();
 
+pointModel.init();
+
 const newEventButton = document.querySelector('.trip-main__event-add-btn');
 if (newEventButton) {
   newEventButton.addEventListener('click', () => {
     presenter.createNewPoint();
   });
 }
-
-pointModel.init();
