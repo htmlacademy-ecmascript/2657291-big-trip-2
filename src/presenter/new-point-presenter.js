@@ -1,5 +1,5 @@
-import { render } from '../framework/render.js';
-import { isEscape } from '../common/utils.js';
+import { render, remove } from '../framework/render.js';
+import { isEscape, shake } from '../common/utils.js';
 import NewPointView from '../view/point/new-point-view.js';
 
 export default class NewPointPresenter {
@@ -31,24 +31,36 @@ export default class NewPointPresenter {
 
     this.#onNewPointOpen();
 
+    const firstDestinationId = this.#destinations && this.#destinations.length > 0
+      ? this.#destinations[0].id
+      : '';
+
+    const defaultPoint = {
+      basePrice: 0,
+      dateFrom: new Date(),
+      dateTo: new Date(),
+      destination: firstDestinationId,
+      isFavorite: false,
+      offers: [],
+      type: 'flight',
+    };
+
     this.#formView = new NewPointView({
+      point: defaultPoint,
       destinations: this.#destinations,
       allOffers: this.#allOffers,
       onSave: this.#handleSave,
       onClose: this.#handleClose,
     });
 
-    render(this.#formView, this.#container, 'afterbegin');
+    render(this.#formView, this.#container.element, 'afterbegin');
     this.#formView._restoreHandlers();
     document.addEventListener('keydown', this.#onEscKeydown);
   }
 
   #closeForm() {
     if (this.#formView) {
-      if (this.#formView.element) {
-        this.#formView.element.remove();
-      }
-      this.#formView.removeElement();
+      remove(this.#formView);
       this.#formView = null;
     }
 
@@ -71,8 +83,8 @@ export default class NewPointPresenter {
   }
 
   #handleSave = (pointData) => {
+    this.setSaving();
     this.#onNewPointSave(pointData);
-    this.#closeForm();
   };
 
   #handleClose = () => {
@@ -81,5 +93,40 @@ export default class NewPointPresenter {
 
   close() {
     this.#closeForm();
+  }
+
+  setSaving() {
+    if (this.#formView) {
+      this.#formView.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  resetForm() {
+    if (this.#formView) {
+      this.#formView.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    }
+  }
+
+  setAborting() {
+    if (!this.#formView) {
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#formView.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    shake(this.#formView.element, resetFormState);
   }
 }
