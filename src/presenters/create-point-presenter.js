@@ -1,7 +1,7 @@
-import { DEFAULT_FILTER, UpdateType, TimeLimit } from '../const';
-import { remove, render, RenderPosition } from '../framework/render';
-import CreateButtonView from '../views/create-button-view';
-import FormView from '../views/form-view';
+import { DEFAULT_FILTER, UpdateType, TimeLimit } from '../const.js';
+import { remove, render, RenderPosition } from '../framework/render.js';
+import CreateButtonView from '../views/create-button-view.js';
+import FormView from '../views/form-view.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 
 export default class CreatePointPresenter {

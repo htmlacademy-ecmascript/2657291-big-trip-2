@@ -1,5 +1,5 @@
-import { UpdateType } from '../const';
-import Observable from '../framework/observable';
+import { UpdateType } from '../const.js';
+import Observable from '../framework/observable.js';
 
 export default class PointModel extends Observable {
   #points = [];

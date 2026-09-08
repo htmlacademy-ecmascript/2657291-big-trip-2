@@ -1,7 +1,7 @@
-import { DEFAULT_SORTING, UpdateType } from '../const';
-import { render } from '../framework/render';
-import { getAvailableSorting } from '../utils/sorting';
-import SortingView from '../views/sorting-view';
+import { DEFAULT_SORTING, UpdateType } from '../const.js';
+import { render } from '../framework/render.js';
+import { getAvailableSorting } from '../utils/sorting.js';
+import SortingView from '../views/sorting-view.js';
 
 export default class SortingPresenter {
   #sortingModel;

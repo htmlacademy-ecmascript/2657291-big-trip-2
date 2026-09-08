@@ -1,5 +1,5 @@
-import { EndPoints, Method } from '../const';
-import ApiService from '../framework/api-service';
+import { EndPoints, Method } from '../const.js';
+import ApiService from '../framework/api-service.js';
 
 export default class PointsApiService extends ApiService {
 

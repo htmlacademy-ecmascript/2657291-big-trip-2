@@ -60,11 +60,10 @@ export function formatDateForInput(date) {
 
   const day = String(parsedDate.date()).padStart(2, '0');
   const month = String(parsedDate.month() + 1).padStart(2, '0');
-  const year = String(parsedDate.year()).slice(-2);
   const hours = String(parsedDate.hour()).padStart(2, '0');
   const minutes = String(parsedDate.minute()).padStart(2, '0');
 
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
+  return `${day}/${month}/${parsedDate.year()} ${hours}:${minutes}`;
 }
 
 export function isDatesEqual(dateA, dateB) {

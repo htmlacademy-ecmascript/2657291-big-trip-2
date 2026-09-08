@@ -155,18 +155,18 @@ export default class FormView extends AbstractStatefulView {
 
     flatpickr(startInput, {
       enableTime: true,
-      dateFormat: 'd/m/y H:i',
-      defaultDate: this._state.point?.dateFrom ? dayjs(this._state.point.dateFrom).format('DD/MM/YY HH:mm') : null,
+      dateFormat: 'd/m/Y H:i',
+      defaultDate: this._state.point?.dateFrom ? dayjs(this._state.point.dateFrom).format('DD/MM/YYYY HH:mm') : null,
     });
 
     flatpickr(endInput, {
       enableTime: true,
-      dateFormat: 'd/m/y H:i',
-      defaultDate: this._state.point?.dateTo ? dayjs(this._state.point.dateTo).format('DD/MM/YY HH:mm') : null,
+      dateFormat: 'd/m/Y H:i',
+      defaultDate: this._state.point?.dateTo ? dayjs(this._state.point.dateTo).format('DD/MM/YYYY HH:mm') : null,
     });
 
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handleRollupButtonClick);
-    this.element.querySelector('.event__save-btn').addEventListener('click', this.#handleSaveButtonClick);
+    this.element.querySelector('.event--edit').addEventListener('submit', this.#handleSaveButtonClick);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#handleDeleteButtonClick);
     this.element.querySelector('.event__type-list').addEventListener('change', this.#handleTypeChange);
     this.element.querySelector('#event-destination-1').addEventListener('change', this.#handleDestinationChange);
@@ -183,13 +183,14 @@ export default class FormView extends AbstractStatefulView {
 
     const dateFrom = formData.get('event-start-time');
     const dateTo = formData.get('event-end-time');
-    const dateFromISO = dateFrom ? dayjs(dateFrom, 'DD/MM/YY HH:mm').toISOString() : null;
-    const dateToISO = dateTo ? dayjs(dateTo, 'DD/MM/YY HH:mm').toISOString() : null;
+    const dateFromISO = dateFrom ? dayjs(dateFrom, 'DD/MM/YYYY HH:mm').toISOString() : null;
+    const dateToISO = dateTo ? dayjs(dateTo, 'DD/MM/YYYY HH:mm').toISOString() : null;
 
     const offers = Array.from(this.element.querySelectorAll('.event__offer-checkbox:checked'))
       .map((checkbox) => checkbox.name.replace('event-offer-', ''));
 
     return {
+      id: this.#point?.id ?? this._state.point?.id ?? undefined,
       type,
       destination: destinationId,
       basePrice,
@@ -223,7 +224,10 @@ export default class FormView extends AbstractStatefulView {
     evt.preventDefault();
     const pointData = this.#collectFormData();
 
-    if (!pointData.destination || !pointData.dateFrom || !pointData.dateTo || pointData.basePrice <= 0) {
+    const dateFromValid = pointData.dateFrom && dayjs(pointData.dateFrom).isValid();
+    const dateToValid = pointData.dateTo && dayjs(pointData.dateTo).isValid();
+
+    if (!pointData.destination || !dateFromValid || !dateToValid || pointData.basePrice <= 0) {
       this.shake();
       return;
     }

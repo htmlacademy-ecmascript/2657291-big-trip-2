@@ -1,10 +1,10 @@
-import { FilterType, UpdateType } from '../const';
-import { remove, render } from '../framework/render';
-import { getFilteredPoints } from '../utils/filter-points';
-import { getSortingPoints } from '../utils/sorting-points';
-import EmptyView from '../views/empty-view';
-import PointPresenter from './point-presenter';
-import LoadingView from '../views/loading-view';
+import { FilterType, UpdateType } from '../const.js';
+import { remove, render } from '../framework/render.js';
+import { getFilteredPoints } from '../utils/filter-points.js';
+import { getSortingPoints } from '../utils/sorting-points.js';
+import EmptyView from '../views/empty-view.js';
+import PointPresenter from './point-presenter.js';
+import LoadingView from '../views/loading-view.js';
 
 export default class PointsPresenter {
   #pointsModel = null;

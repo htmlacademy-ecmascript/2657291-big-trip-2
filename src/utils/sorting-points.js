@@ -1,4 +1,4 @@
-import { SortType } from '../const';
+import { SortType } from '../const.js';
 
 export const getSortingPoints = {
   [SortType.DAY]: (points) =>

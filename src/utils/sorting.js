@@ -1,4 +1,4 @@
-import { SortTypeDescriptions } from '../const';
+import { SortTypeDescriptions } from '../const.js';
 
 export const getAvailableSorting = (currentSorting) => Object
   .keys(SortTypeDescriptions)

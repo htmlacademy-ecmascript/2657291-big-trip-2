@@ -1,4 +1,4 @@
-import Observable from '../framework/observable';
+import Observable from '../framework/observable.js';
 
 export default class AppModel extends Observable {
   #openedForm = null;

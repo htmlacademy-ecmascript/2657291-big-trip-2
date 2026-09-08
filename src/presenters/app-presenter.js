@@ -1,20 +1,20 @@
-import DestinationsApiService from '../api/destinations-api';
-import OffersApiService from '../api/offers-api';
-import PointsApiService from '../api/points-api';
+import DestinationsApiService from '../api/destinations-api.js';
+import OffersApiService from '../api/offers-api.js';
+import PointsApiService from '../api/points-api.js';
 
-import { AUTHORIZATION, SERVER } from '../const';
-import DestinationsModel from '../models/destinations-model';
-import OffersModel from '../models/offers-model';
-import PointsModel from '../models/points-model';
-import FilterModel from '../models/filter-model';
-import CreatePointPresenter from './create-point-presenter';
-import FilterPresenter from './filter-presenter';
-import PointsPresenter from './points-presenter';
-import SortingPresenter from './sorting-presenter';
-import SortingModel from '../models/sorting-model';
+import { AUTHORIZATION, SERVER } from '../const.js';
+import DestinationsModel from '../models/destinations-model.js';
+import OffersModel from '../models/offers-model.js';
+import PointsModel from '../models/points-model.js';
+import FilterModel from '../models/filter-model.js';
+import CreatePointPresenter from './create-point-presenter.js';
+import FilterPresenter from './filter-presenter.js';
+import PointsPresenter from './points-presenter.js';
+import SortingPresenter from './sorting-presenter.js';
+import SortingModel from '../models/sorting-model.js';
 import TripInfoPresenter from './trip-info-presenter.js';
-import AppModel from '../models/app-model';
-import PointListView from '../views/point-list-view';
+import AppModel from '../models/app-model.js';
+import PointListView from '../views/point-list-view.js';
 
 const filtersElement = document.querySelector('.trip-controls__filters');
 const eventsElement = document.querySelector('.trip-events');
@@ -101,14 +101,6 @@ export default class AppPresenter {
     this.#pointsPresenter.init(eventsElement);
     this.#appModel.addObserver(this.#handleFormEvent);
   }
-
-  /*async #loadData() {   НЕ ОТОБРАЖАЛИСЬ ОФФЕРЫ
-    await Promise.all([
-      this.#pointsModel.init(),
-      this.#offersModel.init(),
-      this.#destinationsModel.init(),
-    ]);
-  }*/
 
   async #loadData() {
     await Promise.all([

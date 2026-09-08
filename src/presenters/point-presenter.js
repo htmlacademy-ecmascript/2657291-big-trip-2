@@ -1,5 +1,5 @@
-import { remove, render, replace } from '../framework/render';
-import PointView from '../views/point-view';
+import { remove, render, replace } from '../framework/render.js';
+import PointView from '../views/point-view.js';
 import { formatDate, getDuration } from '../utils/date.js';
 import FormView from '../views/form-view.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
@@ -121,7 +121,6 @@ export default class PointPresenter {
     this.#uiBlocker.block();
     try {
       await this.#pointsModel.deletePoint(id);
-      //this.handleCloseForm();
     } catch (error) {
       this.#formView.resetButtons();
       this.#formView.shake();
