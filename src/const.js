@@ -57,29 +57,11 @@ export const SortTypeDescriptions = {
 
 export const DEFAULT_SORTING = SortType.DAY;
 
-const UserAction = {
-  UPDATE_POINT: 'UPDATE_POINT',
-  ADD_POINT: 'ADD_POINT',
-  DELETE_POINT: 'DELETE_POINT',
-};
-
 const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
   INIT: 'INIT',
-};
-
-const FILTER_NAMES = {
-  [FilterType.EVERYTHING]: 'Everything',
-  [FilterType.FUTURE]: 'Future',
-  [FilterType.PRESENT]: 'Present',
-  [FilterType.PAST]: 'Past',
-};
-
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
 };
 
 const POINTS_TYPES = [
@@ -99,4 +81,6 @@ const TimeLimit = {
   UPPER_LIMIT: 1000,
 };
 
-export { FilterType, SortType, UserAction, UpdateType, FILTER_NAMES, Mode, POINTS_TYPES, TimeLimit };
+export const SHAKE_ANIMATION_TIMEOUT = 600;
+
+export { FilterType, SortType, UpdateType, POINTS_TYPES, TimeLimit };

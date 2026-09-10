@@ -3,6 +3,8 @@ import Observable from '../framework/observable.js';
 export default class OffersModel extends Observable {
   #offers = [];
   #server = null;
+  #isLoading = false;
+  #isLoadingFailed = false;
 
   constructor(server) {
     super();
@@ -10,7 +12,16 @@ export default class OffersModel extends Observable {
   }
 
   async init() {
-    this.#offers = await this.#server.getOffers();
+    this.#isLoading = true;
+    try {
+      this.#offers = await this.#server.getOffers();
+      this.#isLoadingFailed = false;
+    } catch (error) {
+      this.#offers = [];
+      this.#isLoadingFailed = true;
+    } finally {
+      this.#isLoading = false;
+    }
   }
 
   getOffersByType(type) {
@@ -21,5 +32,13 @@ export default class OffersModel extends Observable {
   getSelectedOffers(type, selectedIds) {
     const allOffers = this.getOffersByType(type);
     return allOffers.filter((offer) => selectedIds.includes(offer.id));
+  }
+
+  get isLoading() {
+    return this.#isLoading;
+  }
+
+  get isLoadingFailed() {
+    return this.#isLoadingFailed;
   }
 }

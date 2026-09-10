@@ -106,8 +106,14 @@ export default class AppPresenter {
     await Promise.all([
       this.#offersModel.init(),
       this.#destinationsModel.init(),
+      this.#pointsModel.init(),
     ]);
-    await this.#pointsModel.init();
+
+    if (this.#offersModel.isLoadingFailed || this.#destinationsModel.isLoadingFailed) {
+      this.#pointsModel.setLoadingFailed(true);
+    }
+
+    this.#pointsModel.notifyInit();
   }
 
   #handleFormEvent = () => {

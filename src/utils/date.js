@@ -3,10 +3,6 @@ import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
-const DATE_FORMAT = 'D MMMM';
-
-export const humanizeTaskDueData = (dueData) => dueData ? dayjs(dueData).format(DATE_FORMAT) : '';
-
 export const formatDate = (date, format) => {
   if (!date) {
     return '';
@@ -65,19 +61,3 @@ export function formatDateForInput(date) {
 
   return `${day}/${month}/${parsedDate.year()} ${hours}:${minutes}`;
 }
-
-export function isDatesEqual(dateA, dateB) {
-  if (dateA === null && dateB === null) {
-    return true;
-  }
-  if (dateA === null || dateB === null) {
-    return false;
-  }
-  return dayjs(dateA).isSame(dayjs(dateB), 'day');
-}
-
-export const getDefaultDateFrom = () => new Date().toISOString();
-export const getDefaultDateTo = () => new Date(Date.now() + 3600000)
-  .toISOString();
-
-export const formatTripDate = (date) => dayjs(date).format('D MMM').toUpperCase();

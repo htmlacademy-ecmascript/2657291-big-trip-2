@@ -3,6 +3,8 @@ import Observable from '../framework/observable.js';
 export default class DestinationsModel extends Observable {
   #destinations = [];
   #server = null;
+  #isLoading = false;
+  #isLoadingFailed = false;
 
   constructor(server) {
     super();
@@ -10,11 +12,20 @@ export default class DestinationsModel extends Observable {
   }
 
   async init() {
-    this.#destinations = await this.#server.getDestinations();
+    this.#isLoading = true;
+    try {
+      this.#destinations = await this.#server.getDestinations();
+      this.#isLoadingFailed = false;
+    } catch (error) {
+      this.#destinations = [];
+      this.#isLoadingFailed = true;
+    } finally {
+      this.#isLoading = false;
+    }
   }
 
-  getDestinationNameById(id){
-    return this.#destinations.find((item) => item.id === id).name;
+  getDestinationNameById(id) {
+    return this.#destinations.find((item) => item.id === id)?.name || '';
   }
 
   getDestinationById(id) {
@@ -24,5 +35,12 @@ export default class DestinationsModel extends Observable {
   get destinations() {
     return this.#destinations;
   }
-}
 
+  get isLoading() {
+    return this.#isLoading;
+  }
+
+  get isLoadingFailed() {
+    return this.#isLoadingFailed;
+  }
+}

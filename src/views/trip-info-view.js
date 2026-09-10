@@ -26,6 +26,5 @@ export default class TripInfoView extends AbstractStatefulView {
   }
 
   _restoreHandlers() {
-
   }
 }

@@ -5,8 +5,72 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import { escapeHTML } from '../utils/escape.js';
+import { POINTS_TYPES, SHAKE_ANIMATION_TIMEOUT } from '../const.js';
 
 dayjs.extend(customParseFormat);
+
+function createTypeOptions(currentType) {
+  return POINTS_TYPES.map((type) => `
+    <div class="event__type-item">
+      <input id="event-type-${escapeHTML(type)}-1" class="event__type-input visually-hidden" type="radio" name="event-type" value="${escapeHTML(type)}" ${type === currentType ? 'checked' : ''}>
+      <label class="event__type-label event__type-label--${escapeHTML(type)}" for="event-type-${escapeHTML(type)}-1">${escapeHTML(type.charAt(0).toUpperCase() + type.slice(1))}</label>
+    </div>
+  `).join('');
+}
+
+function createOffersBlock(availableOffers, selectedOffers) {
+  if (!availableOffers || availableOffers.length === 0) {
+    return '';
+  }
+  return `
+    <section class="event__section event__section--offers">
+      <h3 class="event__section-title event__section-title--offers">Offers</h3>
+      <div class="event__available-offers">
+        ${availableOffers.map((offer) => `
+          <div class="event__offer-selector">
+            <input
+              class="event__offer-checkbox visually-hidden"
+              id="event-offer-${escapeHTML(String(offer.id))}-1"
+              type="checkbox"
+              name="event-offer-${escapeHTML(String(offer.id))}"
+              ${selectedOffers.includes(offer.id) ? 'checked' : ''}
+            >
+            <label class="event__offer-label" for="event-offer-${escapeHTML(String(offer.id))}-1">
+              <span class="event__offer-title">${escapeHTML(offer.title)}</span>
+              &plus;&euro;&nbsp;
+              <span class="event__offer-price">${escapeHTML(String(offer.price))}</span>
+            </label>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function createDestinationBlock(destinations, destinationId) {
+  const selectedDestination = destinations.find((item) => item.id === destinationId);
+  if (!selectedDestination) {
+    return '';
+  }
+  const hasDescription = selectedDestination.description && selectedDestination.description.trim().length > 0;
+  const hasPictures = selectedDestination.pictures && selectedDestination.pictures.length > 0;
+  if (!hasDescription && !hasPictures) {
+    return '';
+  }
+  return `
+    <section class="event__section event__section--destination">
+      <h3 class="event__section-title event__section-title--destination">Destination</h3>
+      ${hasDescription ? `<p class="event__destination-description">${escapeHTML(selectedDestination.description)}</p>` : ''}
+      ${hasPictures ? `
+        <div class="event__photos-container">
+          <div class="event__photos-tape">
+            ${selectedDestination.pictures.map((pic) => `<img class="event__photo" src="${escapeHTML(pic.src)}" alt="${escapeHTML(pic.description || '')}">`).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </section>
+  `;
+}
 
 function createTemplate(point, destinations, availableOffers) {
   const {
@@ -29,44 +93,8 @@ function createTemplate(point, destinations, availableOffers) {
     `<option value="${escapeHTML(item.name)}"></option>`
   ).join('');
 
-  const offersBlock = availableOffers.length > 0 ? `
-    <section class="event__section event__section--offers">
-      <h3 class="event__section-title event__section-title--offers">Offers</h3>
-      <div class="event__available-offers">
-        ${availableOffers.map((offer) => `
-          <div class="event__offer-selector">
-            <input
-              class="event__offer-checkbox visually-hidden"
-              id="event-offer-${offer.id}-1"
-              type="checkbox"
-              name="event-offer-${offer.id}"
-              ${offers.includes(offer.id) ? 'checked' : ''}
-            >
-            <label class="event__offer-label" for="event-offer-${offer.id}-1">
-              <span class="event__offer-title">${escapeHTML(offer.title)}</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">${escapeHTML(offer.price)}</span>
-            </label>
-          </div>
-        `).join('')}
-      </div>
-    </section>
-  ` : '';
-
-  const selectedDestination = destinations.find((item) => item.id === destination || item.name === destination);
-  const destinationBlock = selectedDestination && (selectedDestination.description || selectedDestination.pictures) ? `
-    <section class="event__section event__section--destination">
-      <h3 class="event__section-title event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${escapeHTML(selectedDestination.description || '')}</p>
-      ${selectedDestination.pictures ? `
-        <div class="event__photos-container">
-          <div class="event__photos-tape">
-            ${selectedDestination.pictures.map((pic) => `<img class="event__photo" src="${escapeHTML(pic.src)}" alt="${escapeHTML(pic.description || '')}">`).join('')}
-          </div>
-        </div>
-      ` : ''}
-    </section>
-  ` : '';
+  const offersBlock = createOffersBlock(availableOffers, offers);
+  const destinationBlock = createDestinationBlock(destinations, destination);
 
   return `
   <li class="trip-events__item">
@@ -81,12 +109,7 @@ function createTemplate(point, destinations, availableOffers) {
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Event type</legend>
-              ${['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'].map((item) => `
-                <div class="event__type-item">
-                  <input id="event-type-${item}-1" class="event__type-input visually-hidden" type="radio" name="event-type" value="${item}" ${type === item ? 'checked' : ''}>
-                  <label class="event__type-label event__type-label--${item}" for="event-type-${item}-1">${escapeHTML(item.charAt(0).toUpperCase() + item.slice(1))}</label>
-                </div>
-              `).join('')}
+              ${createTypeOptions(type)}
             </fieldset>
           </div>
         </div>
@@ -109,7 +132,7 @@ function createTemplate(point, destinations, availableOffers) {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input event__input--price" id="event-price-1" type="text" name="event-price" value="${escapeHTML(basePrice)}">
+          <input class="event__input event__input--price" id="event-price-1" type="text" name="event-price" value="${escapeHTML(String(basePrice))}">
         </div>
         <button class="event__save-btn btn btn--blue" type="submit">Save</button>
         <button class="event__reset-btn" type="reset">${isEdit ? 'Delete' : 'Cancel'}</button>
@@ -130,7 +153,6 @@ export default class FormView extends AbstractStatefulView {
   #onSubmit;
   #onDelete;
   #point;
-
   #destinations;
 
   constructor({ point = null, destinations = [], availableOffers = [], onTypeChange, onCloseForm, onSubmit, onDelete }) {
@@ -150,26 +172,46 @@ export default class FormView extends AbstractStatefulView {
   }
 
   _restoreHandlers() {
-    const startInput = this.element.querySelector('#event-start-time-1');
-    const endInput = this.element.querySelector('#event-end-time-1');
+    const startInputElement = this.element.querySelector('#event-start-time-1');
+    const endInputElement = this.element.querySelector('#event-end-time-1');
 
-    flatpickr(startInput, {
-      enableTime: true,
-      dateFormat: 'd/m/Y H:i',
-      defaultDate: this._state.point?.dateFrom ? dayjs(this._state.point.dateFrom).format('DD/MM/YYYY HH:mm') : null,
-    });
-
-    flatpickr(endInput, {
-      enableTime: true,
-      dateFormat: 'd/m/Y H:i',
-      defaultDate: this._state.point?.dateTo ? dayjs(this._state.point.dateTo).format('DD/MM/YYYY HH:mm') : null,
-    });
+    this.#initFlatpickr(startInputElement, this._state.point?.dateFrom);
+    this.#initFlatpickr(endInputElement, this._state.point?.dateTo);
 
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handleRollupButtonClick);
     this.element.querySelector('.event--edit').addEventListener('submit', this.#handleSaveButtonClick);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#handleDeleteButtonClick);
     this.element.querySelector('.event__type-list').addEventListener('change', this.#handleTypeChange);
     this.element.querySelector('#event-destination-1').addEventListener('change', this.#handleDestinationChange);
+  }
+
+  shake() {
+    this.element.classList.add('shake');
+    setTimeout(() => this.element.classList.remove('shake'), SHAKE_ANIMATION_TIMEOUT);
+  }
+
+  resetButtons() {
+    const saveBtn = this.element.querySelector('.event__save-btn');
+    const resetBtn = this.element.querySelector('.event__reset-btn');
+
+    if (saveBtn) {
+      saveBtn.textContent = 'Save';
+      saveBtn.disabled = false;
+    }
+
+    if (resetBtn) {
+      const isEdit = Boolean(this._state.point);
+      resetBtn.textContent = isEdit ? 'Delete' : 'Cancel';
+      resetBtn.disabled = false;
+    }
+  }
+
+  #initFlatpickr(inputElement, defaultValue) {
+    flatpickr(inputElement, {
+      enableTime: true,
+      dateFormat: 'd/m/Y H:i',
+      defaultDate: defaultValue ? dayjs(defaultValue).format('DD/MM/YYYY HH:mm') : null,
+    });
   }
 
   #collectFormData() {
@@ -227,7 +269,7 @@ export default class FormView extends AbstractStatefulView {
     const dateFromValid = pointData.dateFrom && dayjs(pointData.dateFrom).isValid();
     const dateToValid = pointData.dateTo && dayjs(pointData.dateTo).isValid();
 
-    if (!pointData.destination || !dateFromValid || !dateToValid || pointData.basePrice <= 0) {
+    if (!pointData.destination || !dateFromValid || !dateToValid || pointData.basePrice <= 0 || !Number.isInteger(pointData.basePrice)) {
       this.shake();
       return;
     }
@@ -256,11 +298,6 @@ export default class FormView extends AbstractStatefulView {
     }
   };
 
-  shake() {
-    this.element.classList.add('shake');
-    setTimeout(() => this.element.classList.remove('shake'), 600);
-  }
-
   #handleDestinationChange = (evt) => {
     const destinationName = evt.target.value;
     const destinationObj = this.#destinations.find((item) => item.name === destinationName);
@@ -275,20 +312,4 @@ export default class FormView extends AbstractStatefulView {
 
     this.updateElement({ point: newPoint });
   };
-
-  resetButtons() {
-    const saveBtn = this.element.querySelector('.event__save-btn');
-    const resetBtn = this.element.querySelector('.event__reset-btn');
-
-    if (saveBtn) {
-      saveBtn.textContent = 'Save';
-      saveBtn.disabled = false;
-    }
-
-    if (resetBtn) {
-      const isEdit = Boolean(this._state.point);
-      resetBtn.textContent = isEdit ? 'Delete' : 'Cancel';
-      resetBtn.disabled = false;
-    }
-  }
 }

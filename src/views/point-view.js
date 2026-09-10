@@ -17,21 +17,21 @@ function createTemplate({
   return (`
     <li class="trip-events__item">
       <div class="event">
-        <time class="event__date" datetime="${escapeHTML(dateFrom instanceof Date ? dateFrom.toISOString() : dateFrom)}">${escapeHTML(date)}</time>
+        <time class="event__date" datetime="${escapeHTML(dateFrom instanceof Date ? dateFrom.toISOString() : String(dateFrom))}">${escapeHTML(date)}</time>
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${escapeHTML(type)}.png" alt="Event type icon">
         </div>
         <h3 class="event__title">${escapeHTML(type)} ${escapeHTML(destination)}</h3>
         <div class="event__schedule">
           <p class="event__time">
-            <time class="event__start-time" datetime="${escapeHTML(dateFrom instanceof Date ? dateFrom.toISOString() : dateFrom)}">${escapeHTML(timeFrom)}</time>
+            <time class="event__start-time" datetime="${escapeHTML(dateFrom instanceof Date ? dateFrom.toISOString() : String(dateFrom))}">${escapeHTML(timeFrom)}</time>
             &mdash;
-            <time class="event__end-time" datetime="${escapeHTML(dateTo instanceof Date ? dateTo.toISOString() : dateTo)}">${escapeHTML(timeTo)}</time>
+            <time class="event__end-time" datetime="${escapeHTML(dateTo instanceof Date ? dateTo.toISOString() : String(dateTo))}">${escapeHTML(timeTo)}</time>
           </p>
           <p class="event__duration">${escapeHTML(duration)}</p>
         </div>
         <p class="event__price">
-          &euro;&nbsp;<span class="event__price-value">${escapeHTML(basePrice)}</span>
+          &euro;&nbsp;<span class="event__price-value">${escapeHTML(String(basePrice))}</span>
         </p>
 
         ${offers.length > 0 ? `
@@ -41,7 +41,7 @@ function createTemplate({
               <li class="event__offer">
                 <span class="event__offer-title">${escapeHTML(offer.title)}</span>
                 &plus;&euro;&nbsp;
-                <span class="event__offer-price">${escapeHTML(offer.price)}</span>
+                <span class="event__offer-price">${escapeHTML(String(offer.price))}</span>
               </li>
             `).join('')}
           </ul>

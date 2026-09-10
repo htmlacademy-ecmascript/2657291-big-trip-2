@@ -22,8 +22,16 @@ export default class PointModel extends Observable {
       this.#isLoadingFailed = true;
     } finally {
       this.#isLoading = false;
-      this._notify(UpdateType.INIT);
     }
+  }
+
+  notifyInit() {
+    this._notify(UpdateType.INIT);
+  }
+
+  setLoadingFailed(isFailed) {
+    this.#isLoadingFailed = isFailed;
+    this.#isLoading = false;
   }
 
   get points() {

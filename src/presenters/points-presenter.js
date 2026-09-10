@@ -60,14 +60,14 @@ export default class PointsPresenter {
   }
 
   #renderList() {
-    const points = this.#getPoints();
-
     if (this.#pointsModel.isLoading) {
       this.#renderLoading();
       return;
     }
 
-    if (!points.length) {
+    const points = this.#getPoints();
+
+    if (!points.length || this.#pointsModel.isLoadingFailed) {
       this.#renderEmptyList();
       return;
     }

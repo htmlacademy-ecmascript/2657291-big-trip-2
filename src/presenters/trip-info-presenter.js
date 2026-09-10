@@ -79,9 +79,9 @@ export default class TripInfoPresenter {
 
   #calculateTotalCost(points) {
     return points.reduce((sum, point) => {
-      let pointCost = Number(point.basePrice);
+      let pointCost = point.basePrice;
       const selectedOffers = this.#offersModel.getSelectedOffers(point.type, point.offers);
-      pointCost += selectedOffers.reduce((offerSum, offer) => offerSum + Number(offer.price), 0);
+      pointCost += selectedOffers.reduce((offerSum, offer) => offerSum + offer.price, 0);
       return sum + pointCost;
     }, 0);
   }

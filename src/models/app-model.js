@@ -21,6 +21,10 @@ export default class AppModel extends Observable {
   }
 
   closeForm() {
+    if (!this.#openedForm) {
+      return;
+    }
+
     const closedForm = this.#openedForm;
 
     this.#openedForm = null;
